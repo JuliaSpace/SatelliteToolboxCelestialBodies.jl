@@ -19,11 +19,12 @@ We can compute the Sun position represented in the Mean-Of-Date (MOD) reference 
 **[1]** using the functions:
 
 ```julia
-function sun_position_mod(jd::Number)
-function sun_position_mod(date::DateTime)
+function sun_position_mod(jd_tdb::Number)
+function sun_position_mod(date_tdb::DateTime)
 ```
 
-The input date must be represented in [UT1](https://en.wikipedia.org/wiki/Universal_Time).
+where the input time `jd_tdb` (Julian Day) or `date_tdb` must be represented in the
+[Barycentric Dynamical Time (TDB)](https://en.wikipedia.org/wiki/Barycentric_Dynamical_Time).
 
 ```julia
 julia> sun_position_mod(now())
@@ -37,11 +38,12 @@ We can also compute the Sun velocity represented in MOD frame as measured by an 
 the same frame:
 
 ```julia
-function sun_velocity_mod(jd::Number)
-function sun_velocity_mod(date::DateTime)
+function sun_velocity_mod(jd_tdb::Number)
+function sun_velocity_mod(date_tdb::DateTime)
 ```
 
-The input date must be represented in [UT1](https://en.wikipedia.org/wiki/Universal_Time).
+where the input time `jd_tdb` (Julian Day) or `date_tdb` must be represented in the
+[Barycentric Dynamical Time (TDB)](https://en.wikipedia.org/wiki/Barycentric_Dynamical_Time).
 
 > **Note**
 > This algorithm was obtained by differentiating the Sun position equations in **[1]**.
@@ -52,6 +54,39 @@ julia> sun_velocity_mod(now())
  -25645.525387897742
   13231.300593568181
    5735.626095163374
+```
+
+### Moon
+
+We can compute the Moon position represented in the Mean-Of-Date (MOD) reference frame
+**[1, 2]** using the functions:
+
+``` julia
+function moon_position_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
+function moon_position_mod(date_tdb::DateTime[, model]) -> SVector{3, Float64}
+```
+
+where the input time `jd_tdb` (Julian Day) or `date_tdb` must be represented in the
+Barycentric Dynamical Time (TDB).
+
+The `model` must be `Val(:Meeus)` or `Val(:Vallado)`. `Val(:Meeus)` uses the algorithm in
+**[2, p. 337]** that provides an accuracy of 10" in the longitude and 4" in the latitude
+(the reference does not mention the timespan). `Val(:Vallado)` uses the algorithm in
+**[1, p. 288]** that is 10x faster than `Val(:Meeus)` but can lead to errors of 0.3° in
+longitude and 0.2° in latitude.
+
+```julia
+julia> moon_position_mod(now())
+3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
+ -4.992612797700085e7
+  3.48593091076279e8
+  1.864034978650991e8
+
+julia> moon_position_mod(now(), Val(:Vallado))
+3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
+ -4.991011671868989e7
+  3.481318482554912e8
+  1.8647115876567587e8
 ```
 
 ## Rationale
@@ -66,3 +101,4 @@ since the extensive feature list in the other packages is unnecessary here.
 
 - **[1]** **Vallado, D. A** (2013). *Fundamentals of Astrodynamics and Applications*. 4th
   ed. **Microcosm Press**, Hawthorn, CA, USA.
+- **[2]** **Meeus, J** (1998). *Astronomical algorithms*. **Willmann-Bell, Inc**, Richmond, VA.
