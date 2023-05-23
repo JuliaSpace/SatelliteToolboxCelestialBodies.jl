@@ -43,7 +43,7 @@ longitude and 0.2° in latitude.
     Microcosm Press, Hawthorne, CA.
 - **[2]** Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
 """
-moon_position_mod(date_tdb::DateTime) = moon_position_mod(datetime2julian(date_tdb))
+moon_position_mod(date_tdb::DateTime) = moon_position_mod(date_tdb, Val(:Meeus))
 moon_position_mod(jd_tdb::Number) = moon_position_mod(jd_tdb, Val(:Meeus))
 
 function moon_position_mod(date_tdb::DateTime, ::Val{:Meeus})
