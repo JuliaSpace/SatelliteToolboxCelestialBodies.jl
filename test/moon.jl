@@ -57,6 +57,11 @@
     @test λ ≈ 133.162655 atol = 1e-6
     @test β ≈ -3.229126  atol = 1e-6
     @test Δ ≈ 368409.7   atol = 1e-1
+
+    # Test overloads.
+    r_moon2_mod = moon_position_mod(date_tdb |> datetime2julian)
+
+    @test r_moon2_mod == r_moon_mod
 end
 
 ############################################################################################
