@@ -54,21 +54,54 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Meeus})
     # Number of Julian centuries from J2000 epoch.
     t_tdb = (jd_tdb - JD_J2000) / 36525
 
-    # Moon's mean latitude reffered to the mean equinox of data [deg].
-    L´ = @evalpoly(t_tdb, 218.3164477, 481_267.88123421, -0.0015786, 1 / 538841, -1 / 65_194_000)
+    # Moon's mean latitude referred to the mean equinox of data [deg].
+    L´ = @evalpoly(
+        t_tdb,
+        +218.316_447_7,
+        +481_267.881_234_21,
+        -0.001_578_6,
+        +1 / 538_841,
+        -1 / 65_194_000
+    )
 
     # Mean elongation of the Moon [deg].
-    D = @evalpoly(t_tdb, 297.8501921, 445_267.1114034, -0.0018819, 1 / 545868, -1 / 113_065_000)
+    D = @evalpoly(
+        t_tdb,
+        +297.850_192_1,
+        +445_267.111_403_4,
+        -0.001_881_9,
+        +1 / 545_868,
+        -1 / 113_065_000
+    )
 
     # Sun's mean anomaly [deg].
-    M = @evalpoly(t_tdb, 357.5291092, 35_999.0502909, -0.0001536, 1 / 24_490_000)
+    M = @evalpoly(
+        t_tdb,
+        +357.529_109_2,
+        +35_999.050_290_9,
+        -0.000_153_6,
+        +1 / 24_490_000
+    )
 
     # Moon's mean anomaly [deg].
-    M´ = @evalpoly(t_tdb, 134.9633964, 477_198.8675055, 0.0087414, 1 / 69_699, -1 / 14_712_000)
+    M´ = @evalpoly(
+        t_tdb,
+        +134.963_396_4,
+        +477_198.867_505_5,
+        +0.008_741_4,
+        +1 / 69_699,
+        -1 / 14_712_000
+    )
 
-    # Moon's argument of latitude (mean distance of the Moon from its ascending
-    # node) [deg].
-    F = @evalpoly(t_tdb, 93.2720950, 483_202.0175233, -0.0036539, -1 / 3_526_000, 1 / 863_310_000)
+    # Moon's argument of latitude (mean distance of the Moon from its ascending node) [deg].
+    F = @evalpoly(
+        t_tdb,
+        +93.272_095_0,
+        +483_202.017_523_3,
+        -0.003_653_9,
+        -1 / 3_526_000,
+        +1 / 863_310_000
+    )
 
     # Obliquity of the ecliptic [deg].
     ϵ = @evalpoly(t_tdb, 23.439_291, -0.013_004_2, -1.64e-7, +5.04e-7)

@@ -14,9 +14,15 @@
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# Those tables were obtained from [1, p. 339]. They are used to compute the Moon position
-# vector.
+# Those tables were obtained from [1, pp. 339-341]. They are used to compute the Moon
+# position vector.
+
+# Periodic terms for the longitude (∑l) and distance (∑r) of the Moon. The unit is
+# 0.000_001° for ∑l, and 0.001 km for ∑r.
 const _TAB_47A  = [
+#    Argument    ∑l       ∑r
+#   D  M  M` F
+#   ────────── ─────── ─────────
     0  0  1  0 6288774 -20905355
     2  0 -1  0 1274027  -3699111
     2  0  0  0  658314  -2955968
@@ -79,7 +85,11 @@ const _TAB_47A  = [
     2  0 -1 -2       0      8752
 ] |> permutedims
 
+# Periodic terms for the latitude (∑b) of the Moon. The unit is 0.000_001°.
 const _TAB_47B = [
+#    Argument    ∑b
+#   D  M  M` F
+#   ────────── ───────
     0  0  0  1 5128122
     0  0  1  1  280602
     0  0  1 -1  277693
