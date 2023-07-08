@@ -71,3 +71,33 @@ end
         @test norm(v - v_n) / norm(v) * 100 < 0.055
     end
 end
+
+############################################################################################
+#                                       Test Results
+############################################################################################
+#
+# Finding the local sun position in local frame using the following data:
+#   JD = 2460065.945463
+#   Latitude = 51.0 °N
+#   Longitude = 10.0 °E
+#   Pressure = 1.0 atm
+#   Temperature = 20.0 °C
+#   Algorithm = 5
+#
+# Calling the function as:
+#   sun_position_el(2460065.945463, 51.0, 10.0, 1.0, 20.0, 'e', '5')
+#
+# Must result in :
+#   RA = 02h 34m 09s; ~ 38.5375 °
+#   DEC = +15° 06’ 42”; ~ 15.111667 °
+#
+############################################################################################
+
+@testset "Sun Position Local" begin
+    sun_pos_el = sun_position_el(2460065.945463, 51.0, 10.0, 1.0, 20.0, 'e', '5')
+    ra = sun_pos_el[1]*180/pi
+    dec = sun_pos_el[2]*180/pi
+
+    @test ra ≈ 38.5375 atol = 1
+    @test dec ≈ 15.111667 atol = 1
+end
