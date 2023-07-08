@@ -102,7 +102,7 @@ end
 
     # Tolerances for various algorithms
     alg = ('1', '2', '3', '4', '5')
-    tol = (2e0; 2e0; 1e0; 1e0; 1e0)
+    tol = (2e0, 2e0, 1e0, 1e0, 1e0)
 
     for algorithm in 1:5
         s_eq = sun_position_el(JD, Latitude, Longitude, Pressure, Temperature, 'e', alg[algorithm])

@@ -224,6 +224,7 @@ function sunpos_alg1(
     RightAscension = -1.38880 + 1.72027920e-2*te + 3.199e-2*s1 - 2.65e-3*c1 + 4.050e-2*s2
         + 1.525e-2*c2;
     RightAscension = rem(RightAscension, 2*π);
+    (RightAscension < 0.0) ? (RightAscension += 2*π) : nothing
     Declination = 6.57e-3 + 7.347e-2*s1 - 3.9919e-1*c1 + 7.3e-4*s2 - 6.60e-3*c2;
     HourAngle = 1.75283 + 6.3003881*t + Longitude - RightAscension;
     HourAngle = rem(HourAngle + π, 2*π) - π;
@@ -279,6 +280,7 @@ function sunpos_alg2(
     RightAscension = -1.38880 + 1.72027920e-2*te + 3.199e-2*s1 - 2.65e-3*c1 + 4.050e-2*s2
         + 1.525e-2*c2 + 1.33e-3*s3 + 3.8e-4*c3 + 7.3e-4*s4 + 6.2e-4*c4;
     RightAscension = rem(RightAscension, 2*π);
+    (RightAscension < 0.0) ? (RightAscension += 2*π) : nothing
     Declination = 6.57e-3 + 7.347e-2*s1 - 3.9919e-1*c1 + 7.3e-4*s2 - 6.60e-3*c2 + 1.50e-3*s3
         - 2.58e-3*c3 + 6e-5*s4 - 1.3e-4*c4;
     HourAngle = 1.75283 + 6.3003881*t + Longitude - RightAscension;
