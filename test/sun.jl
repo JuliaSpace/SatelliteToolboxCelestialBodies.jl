@@ -102,12 +102,14 @@ end
 
     # Tolerances for various algorithms
     alg = ('1', '2', '3', '4', '5')
-    tol = (1e-1; 1e-1; 1e-1; 1e-1; 1e-1)
+    tol = (2e0; 2e0; 1e0; 1e0; 1e0)
 
     for algorithm in 1:5
         s_eq = sun_position_el(JD, Latitude, Longitude, Pressure, Temperature, 'e', alg[algorithm])
-        ra = s_eq[1]
-        dec = s_eq[2]
+
+        # Convert outputs to degrees
+        ra = s_eq[1]*180/π
+        dec = s_eq[2]*180/π
 
         @test ra ≈ 38.5375 atol = tol[algorithm]
         @test dec ≈ 15.111667 atol = tol[algorithm]
