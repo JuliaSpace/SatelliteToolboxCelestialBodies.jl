@@ -94,10 +94,22 @@ end
 ############################################################################################
 
 @testset "Sun Position Local" begin
-    sun_pos_el = sun_position_el(2460065.945463, 51.0, 10.0, 1.0, 20.0, 'e', '5')
-    ra = sun_pos_el[1]*180/pi
-    dec = sun_pos_el[2]*180/pi
+    JD = 2460065.945463
+    Latitude = 51.0
+    Longitude = 10.0
+    Pressure = 1.0
+    Temperature = 20.0
 
-    @test ra ≈ 38.5375 atol = 1
-    @test dec ≈ 15.111667 atol = 1
+    # Tolerances for various algorithms
+    alg = ('1', '2', '3', '4', '5')
+    tol = (1e-1; 1e-1; 1e-1; 1e-1; 1e-1)
+
+    for algorithm in 1:5
+        s_eq = sun_position_el(JD, Latitude, Longitude, Pressure, Temperature, 'e', alg[algorithm])
+        ra = s_eq[1]
+        dec = s_eq[2]
+
+        @test ra ≈ 38.5375 atol = tol[algorithm]
+        @test dec ≈ 15.111667 atol = tol[algorithm]
+    end
 end
