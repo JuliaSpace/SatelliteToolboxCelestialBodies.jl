@@ -19,6 +19,9 @@
 #
 #   [4] The Astronomical Almanac for the year 2006.
 #
+#   [5] Blanco, Manuel Jesus, Milidonis, Kypros, Bonanos, Aristides. Updating the PSA sun
+#       position algorithm. Solar Energy, vol.212, Elsevier BV,2020-12.
+#
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 export sun_position_mod, sun_velocity_mod, sun_position_el
@@ -174,397 +177,113 @@ function sun_velocity_mod(jd_tdb::Number)
     return vsun_mod
 end
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-# Functions to Compute Sun Position In Local Frame
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-################################################################################
-#                                  Aux. Functions
-################################################################################
-
-# Experimenting with accuracy of results by varying the method of computation of `t`
-function give_t(yt, mt, Day, UT)
-    opt = 1
-    if opt == 1
-        t = ((365.25*(yt-2000)) + (30.6001*(mt+1)) - (0.01*yt) + Day) + 0.0416667*UT - 21958.0;
-    elseif opt == 2
-        t = convert(Float64, floor(365.25*(yt-2000)) + floor(30.6001*(mt+1)) - floor(0.01*(yt)) + Day)
-            + 0.0416667*UT - 21958.0;
-    end
-    return t
-end
-
-# Implementation of Algorithm1
-function sunpos_alg1(
-    UT::AbstractFloat,
-    Day::Integer,
-    Month::Integer,
-    Year::Integer,
-    Dt::AbstractFloat,
-    Longitude::AbstractFloat,
-    Latitude::AbstractFloat,
-    Pressure::AbstractFloat,
-    Temperature::AbstractFloat,
-)
-
-    (Month <= 2) ? (mt = Month + 12; yt = Year - 1) : (mt = Month; yt = Year)
-
-    # Algorithm1
-    t = give_t(yt, mt, Day, UT)
-    te = t + 1.1574e-5*Dt;
-    wte = 0.017202786*te;
-
-    s1 = sin(wte);
-    c1 = cos(wte);
-    s2 = 2.0*s1*c1;
-    c2 = (c1+s1)*(c1-s1);
-
-    RightAscension = -1.38880 + 1.72027920e-2*te + 3.199e-2*s1 - 2.65e-3*c1 + 4.050e-2*s2
-        + 1.525e-2*c2;
-    RightAscension = rem(RightAscension, 2*π);
-    (RightAscension < 0.0) ? (RightAscension += 2*π) : nothing
-    Declination = 6.57e-3 + 7.347e-2*s1 - 3.9919e-1*c1 + 7.3e-4*s2 - 6.60e-3*c2;
-    HourAngle = 1.75283 + 6.3003881*t + Longitude - RightAscension;
-    HourAngle = rem(HourAngle + π, 2*π) - π;
-
-    # Outputs
-    sp = sin(Latitude);
-    cp = sqrt((1-sp*sp));
-    sd = sin(Declination);
-    cd = sqrt(1-sd*sd);
-    sH = sin(HourAngle);
-    cH = cos(HourAngle);
-    se0 = sp*sd + cp*cd*cH;
-    ep = asin(se0) - 4.26e-5*sqrt(1.0-se0*se0);
-
-    (ep > 0.0) ? (De = 0.08422*Pressure/((273.0+Temperature)*tan(ep + 0.003138/(ep + 0.08919)))) : (De = 0.0)
-
-    Zenith = π/2 - ep - De;
-    Azimuth = atan(sH, cH*sp - sd*cp/cd);
-
-    return (RightAscension, Declination, HourAngle, Zenith, Azimuth)
-end
-
-# Implementation of Algorithm2
-function sunpos_alg2(
-    UT::AbstractFloat,
-    Day::Integer,
-    Month::Integer,
-    Year::Integer,
-    Dt::AbstractFloat,
-    Longitude::AbstractFloat,
-    Latitude::AbstractFloat,
-    Pressure::AbstractFloat,
-    Temperature::AbstractFloat,
-)
-
-    (Month <= 2) ? (mt = Month + 12; yt = Year - 1) : (mt = Month; yt = Year)
-
-    # Algorithm2
-    t = give_t(yt, mt, Day, UT)
-    te = t + 1.1574e-5*Dt;
-
-    wte = 0.017202786*te;
-
-    s1 = sin(wte);
-    c1 = cos(wte);
-    s2 = 2.0*s1*c1;
-    c2 = (c1+s1)*(c1-s1);
-    s3 = s2*c1 + c2*s1;
-    c3 = c2*c1 - s2*s1;
-    s4 = 2.0*s2*c2;
-    c4 = (c2+s2)*(c2-s2);
-
-    RightAscension = -1.38880 + 1.72027920e-2*te + 3.199e-2*s1 - 2.65e-3*c1 + 4.050e-2*s2
-        + 1.525e-2*c2 + 1.33e-3*s3 + 3.8e-4*c3 + 7.3e-4*s4 + 6.2e-4*c4;
-    RightAscension = rem(RightAscension, 2*π);
-    (RightAscension < 0.0) ? (RightAscension += 2*π) : nothing
-    Declination = 6.57e-3 + 7.347e-2*s1 - 3.9919e-1*c1 + 7.3e-4*s2 - 6.60e-3*c2 + 1.50e-3*s3
-        - 2.58e-3*c3 + 6e-5*s4 - 1.3e-4*c4;
-    HourAngle = 1.75283 + 6.3003881*t + Longitude - RightAscension;
-    HourAngle = rem(HourAngle + π, 2*π) - π;
-
-    # Outputs
-    sp = sin(Latitude);
-    cp = sqrt((1-sp*sp));
-    sd = sin(Declination);
-    cd = sqrt(1-sd*sd);
-    sH = sin(HourAngle);
-    cH = cos(HourAngle);
-    se0 = sp*sd + cp*cd*cH;
-    ep = asin(se0) - 4.26e-5*sqrt(1.0-se0*se0);
-
-    (ep > 0.0) ? (De = 0.08422*Pressure/((273.0+Temperature)*tan(ep + 0.003138/(ep + 0.08919)))) : (De = 0.0)
-
-    Zenith = π/2 - ep - De;
-    Azimuth = atan(sH, cH*sp - sd*cp/cd);
-
-    return (RightAscension, Declination, HourAngle, Zenith, Azimuth)
-end
-
-# Implementation of Algorithm3
-function sunpos_alg3(
-    UT::AbstractFloat,
-    Day::Integer,
-    Month::Integer,
-    Year::Integer,
-    Dt::AbstractFloat,
-    Longitude::AbstractFloat,
-    Latitude::AbstractFloat,
-    Pressure::AbstractFloat,
-    Temperature::AbstractFloat,
-)
-
-    (Month <= 2) ? (mt = Month + 12; yt = Year - 1) : (mt = Month; yt = Year)
-
-    # Algorithm3
-    t = give_t(yt, mt, Day, UT)
-    te = t + 1.1574e-5*Dt;
-
-    wte = 0.0172019715*te;
-
-    λ = -1.388803 + 1.720279216e-2*te + 3.3366e-2*sin(wte - 0.06172)
-        + 3.53e-4*sin(2.0*wte - 0.1163);
-    ϵ = 4.089567e-1 - 6.19e-9*te;
-
-    sl = sin(λ);
-    cl = cos(λ);
-    se = sin(ϵ);
-    ce = sqrt(1-se*se);
-
-    RightAscension = atan(sl*ce, cl);
-    (RightAscension < 0.0) ? (RightAscension += 2*π) : nothing
-    Declination = asin(sl*se);
-    HourAngle = 1.7528311 + 6.300388099*t + Longitude - RightAscension;
-    HourAngle = rem(HourAngle + π, 2*π) - π;
-
-    # Outputs
-    sp = sin(Latitude);
-    cp = sqrt((1-sp*sp));
-    sd = sin(Declination);
-    cd = sqrt(1-sd*sd);
-    sH = sin(HourAngle);
-    cH = cos(HourAngle);
-    se0 = sp*sd + cp*cd*cH;
-    ep = asin(se0) - 4.26e-5*sqrt(1.0-se0*se0);
-
-    (ep > 0.0) ? (De = 0.08422*Pressure/((273.0+Temperature)*tan(ep + 0.003138/(ep + 0.08919)))) : (De = 0.0)
-
-    Zenith = π/2 - ep - De;
-    Azimuth = atan(sH, cH*sp - sd*cp/cd);
-
-    return (RightAscension, Declination, HourAngle, Zenith, Azimuth)
-end
-
-# Implementation of Algorithm4
-function sunpos_alg4(
-    UT::AbstractFloat,
-    Day::Integer,
-    Month::Integer,
-    Year::Integer,
-    Dt::AbstractFloat,
-    Longitude::AbstractFloat,
-    Latitude::AbstractFloat,
-    Pressure::AbstractFloat,
-    Temperature::AbstractFloat,
-)
-
-    (Month <= 2) ? (mt = Month + 12; yt = Year - 1) : (mt = Month; yt = Year)
-
-    # Algorithm4
-    t = give_t(yt, mt, Day, UT)
-    te = t + 1.1574e-5*Dt;
-
-    wte = 0.0172019715*te;
-
-    L = 1.752790 + 1.720279216e-2*te + 3.3366e-2*sin(wte - 0.06172)
-        + 3.53e-4*sin(2.0*wte - 0.1163);
-
-    ν = 9.282e-4*te - 0.8;
-    Dlam = 8.34e-5*sin(ν);
-    λ = L + π + Dlam;
-
-    ϵ = 4.089567e-1 - 6.19e-9*te + 4.46e-5*cos(ν);
-
-    sl = sin(λ);
-    cl = cos(λ);
-    se = sin(ϵ);
-    ce = sqrt(1-se*se);
-
-    RightAscension = atan(sl*ce, cl);
-    (RightAscension < 0.0) ? (RightAscension += 2*π) : nothing
-    Declination = asin(sl*se);
-    HourAngle = 1.7528311 + 6.300388099*t + Longitude - RightAscension + 0.92*Dlam;
-    HourAngle = rem(HourAngle + π, 2*π) - π;
-
-    # Outputs
-    sp = sin(Latitude);
-    cp = sqrt((1-sp*sp));
-    sd = sin(Declination);
-    cd = sqrt(1-sd*sd);
-    sH = sin(HourAngle);
-    cH = cos(HourAngle);
-    se0 = sp*sd + cp*cd*cH;
-    ep = asin(se0) - 4.26e-5*sqrt(1.0-se0*se0);
-
-    (ep > 0.0) ? (De = 0.08422*Pressure/((273.0+Temperature)*tan(ep + 0.003138/(ep + 0.08919)))) : (De = 0.0)
-
-    Zenith = π/2 - ep - De;
-    Azimuth = atan(sH, cH*sp - sd*cp/cd);
-
-    return (RightAscension, Declination, HourAngle, Zenith, Azimuth)
-end
-
-# Implementation of Algorithm5
-function sunpos_alg5(
-    UT::AbstractFloat,
-    Day::Integer,
-    Month::Integer,
-    Year::Integer,
-    Dt::AbstractFloat,
-    Longitude::AbstractFloat,
-    Latitude::AbstractFloat,
-    Pressure::AbstractFloat,
-    Temperature::AbstractFloat,
-)
-
-    (Month <= 2) ? (mt = Month + 12; yt = Year - 1) : (mt = Month; yt = Year)
-
-    # Algorithm5
-    t = give_t(yt, mt, Day, UT)
-    te = t + 1.1574e-5*Dt;
-
-    wte = 0.0172019715*te;
-
-    s1 = sin(wte);
-    c1 = cos(wte);
-    s2 = 2.0*s1*c1;
-    c2 = (c1+s1)*(c1-s1);
-    s3 = s2*c1 + c2*s1;
-    c3 = c2*c1 - s2*s1;
-
-    L = 1.7527901 + 1.7202792159e-2*te + 3.33024e-2*s1 - 2.0582e-3*c1 + 3.512e-4*s2
-        - 4.07e-5*c2 + 5.2e-6*s3 - 9e-7*c3 - 8.23e-5*s1*sin(2.92e-5*te)
-        + 1.27e-5*sin(1.49e-3*te - 2.337) + 1.21e-5*sin(4.31e-3*te + 3.065)
-        + 2.33e-5*sin(1.076e-2*te - 1.533) + 3.49e-5*sin(1.575e-2*te - 2.358)
-        + 2.67e-5*sin(2.152e-2*te + 0.074) + 1.28e-5*sin(3.152e-2*te + 1.547)
-        + 3.14e-5*sin(2.1277e-1*te - 0.488);
-
-    ν = 9.282e-4*te - 0.8;
-    Dlam = 8.34e-5*sin(ν);
-    λ = L + π + Dlam;
-
-    ϵ = 4.089567e-1 - 6.19e-9*te + 4.46e-5*cos(ν);
-
-    sl = sin(λ);
-    cl = cos(λ);
-    se = sin(ϵ);
-    ce = sqrt(1-se*se);
-
-    RightAscension = atan(sl*ce, cl);
-    (RightAscension < 0.0) ? (RightAscension += 2*π) : nothing
-    Declination = asin(sl*se);
-    HourAngle = 1.7528311 + 6.300388099*t + Longitude - RightAscension + 0.92*Dlam;
-    HourAngle = rem(HourAngle + π, 2*π) - π;
-
-    # Outputs
-    sp = sin(Latitude);
-    cp = sqrt((1-sp*sp));
-    sd = sin(Declination);
-    cd = sqrt(1-sd*sd);
-    sH = sin(HourAngle);
-    cH = cos(HourAngle);
-    se0 = sp*sd + cp*cd*cH;
-    ep = asin(se0) - 4.26e-5*sqrt(1.0-se0*se0);
-
-    (ep > 0.0) ? (De = 0.08422*Pressure/((273.0+Temperature)*tan(ep + 0.003138/(ep + 0.08919)))) : (De = 0.0)
-
-    Zenith = π/2 - ep - De;
-    Azimuth = atan(sH, cH*sp - sd*cp/cd);
-
-    return (RightAscension, Declination, HourAngle, Zenith, Azimuth)
-end
-
-# Main Function
 """
     sun_position_el(
         JD::Number,
-        Longitude::Real=0.0,
         Latitude::Real=0.0,
-        Pressure::Real=1.0,
-        Temperature::Real=20.0,
+        Longitude::Real=0.0,
         flag::Char='l',
-        algorithm::Char='5'
     )
 
 Compute the Sun position represented in the Local Horizon Reference System at the
-Julian Day `JD`, Longitude `Longitude`, Latitude `Latitude`, Atmospheric pressure `Pressure`,
+Julian Day `JD`, Latitude `Latitude`, Longitude `Longitude`, Atmospheric pressure `Pressure`,
 Ambient Temperature `Temperature`, Output Flag `flag` and Algorithm `algorithm`.
 
 Inputs:
 
 JD: Julian Day;
-Longitude and Latitude of the observer, in degrees, WSG84;
-Pressure in atm;
-Temperature in Celsius degrees.
-
+Latitude and Longitude of the observer, in degrees, WSG84;
 
 Outputs:
 
 Equatorial system: flag -e
-    RightAscension, in radians;
-    Declination, in radians;
+    α, Right Ascension in degrees;
+    δ, Declination in degrees;
 
 Local Coordinates: flag -l
-    HourAngle, in radians;
-    Zenith, in radians;
-    Azimuth, in radians;
+    ω, Hour angle in degrees;
+    θ, Zenith in degrees;
+    γ, Azimuth in degrees;
+
+Sun vector in (East, North, Zenith): flag -v
+    SunVec, [Nx3] sun vector in (east, north, zenith);
 
 flag -a: all outputs
+
+Reference: [5]
+Algorithm: PSA+
 
 """
 function sun_position_el(
     JD::Real,
-    Longitude::Real=0.0,
     Latitude::Real=0.0,
-    Pressure::Real=1.0,
-    Temperature::Real=20.0,
+    Longitude::Real=0.0,
     flag::Char='l',
-    algorithm::Char='5',
 )
     # Get time data from Julian Date `JD`
-    Year, Month, Day, h, m, s = jd_to_date(JD)
-    UT = h + m/60.0 + s/3600.0
-    Dt = get_Δat(JD) + 32.184
+    elapsedJD = JD - JD_J2000
+    Year, Month, Day, Hour, Minute, Second = jd_to_date(JD)
+    DecimalHours = Hour + Minute/60.0 + Second/3600.0
 
-    # Convert from degrees to radians
-    Longitude = Longitude*π/180
-    Latitude = Latitude*π/180
+    # PSA+ Algorithm
+    ## Ecliptic Coordinates
+    Ω =  2.267127827e+00 - 9.300339267e-04*elapsedJD #
+    ML = 4.895036035e+00 + 1.720279602e-02*elapsedJD # Mean Longitude
+    MA = 6.239468336e+00 + 1.720200135e-02*elapsedJD # Mean Anomaly
 
-    # Switch algorithm based on the algorithm flag `algorithm`
-    if algorithm == '1'
-        Posn = sunpos_alg1(UT, Day, Month, Year, Dt, Longitude, Latitude, Pressure, Temperature)
-    elseif algorithm == '2'
-        Posn = sunpos_alg2(UT, Day, Month, Year, Dt, Longitude, Latitude, Pressure, Temperature)
-    elseif algorithm == '3'
-        Posn = sunpos_alg3(UT, Day, Month, Year, Dt, Longitude, Latitude, Pressure, Temperature)
-    elseif algorithm == '4'
-        Posn = sunpos_alg4(UT, Day, Month, Year, Dt, Longitude, Latitude, Pressure, Temperature)
-    elseif algorithm == '5'
-        Posn = sunpos_alg5(UT, Day, Month, Year, Dt, Longitude, Latitude, Pressure, Temperature)
-    end
+    # Ecliptic longitude
+    λ₀ = (
+        ML + 3.338320972e-02*sin( MA )
+        + 3.497596876e-04 * sin( 2*MA ) - 1.544353226e-04
+        - 8.689729360e-06*sin( Ω )
+    )
+    # Ecliptic Obliquity
+    ϵ₀ = 4.090904909e-01 - 6.213605399e-09*elapsedJD + 4.418094944e-05*cos(Ω)
+
+    ## Celestial coordinates
+    # Right ascension & declination
+    dY1 = cos( ϵ₀ ) .* sin( λ₀ )
+    dX1 = cos( λ₀ )
+    α = mod2pi(atan( dY1, dX1))
+    δ = asin( sin( ϵ₀ ) .* sin( λ₀ ) )
 
     # Switch output based on the output flag `flag`
-    if flag == 'e'
-        # Equtorial System
-        return Posn[1:2]
-    elseif flag == 'l'
-        # Local Coordinates
-        return Posn[3:5]
-    elseif flag == 'a'
-        # All
-        return Posn
-    end
+    (flag == 'e') ? (return (rad2deg(α), rad2deg(δ))) : nothing # Equtorial System
+
+    ## Topocentric coordinates
+    # Greenwich & Local sidereal time
+    GMST = 6.697096103e+00 + 6.570984737e-02*elapsedJD + DecimalHours
+    LMST = ( GMST*15 + Longitude )*π/180
+    # Hour angle
+    ω = mod2pi(LMST - α)
+
+    # Local coordinates
+    # Zenith
+    θ = (
+        acos(
+            cosd(Latitude)*cos( ω ).*cos( δ )
+            + sin( δ )*sind(Latitude)
+        )
+    )
+    dY2 = -sin(ω)
+    dX2 = tan( δ) * cosd( Latitude ) - sind(Latitude)*cos(ω)
+    # Azimuth
+    γ = mod2pi(atan(dY2, dX2))
+
+    # Parallax correction
+    θ += 6371.01/149597870.7 * sin(θ)
+
+    # Switch output based on the output flag `flag`
+    (flag == 'l') ? (return (rad2deg(ω), rad2deg(θ), rad2deg(γ))) : nothing # Local Coordinates
+
+    # East North Zenith Frame
+    SunVec = [
+        sin(γ).*sin(θ),
+        cos(γ).*sin(θ),
+        cos(θ)
+    ]
+
+    # Switch output based on the output flag `flag`
+    (flag == 'v') ? (return SunVec) : nothing # Local Coord
+    (flag == 'a') ? (return (rad2deg(α), rad2deg(δ), rad2deg(ω), rad2deg(θ), rad2deg(γ), SunVec)) : nothing # all
 end

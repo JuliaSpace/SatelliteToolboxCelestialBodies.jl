@@ -13,6 +13,9 @@
 #   [1] Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
 #       Microcosm Press, Hawthorn, CA, USA.
 #
+#   [2] Blanco, Manuel Jesus, Milidonis, Kypros, Bonanos, Aristides. Updating the PSA sun
+#       position algorithm. Solar Energy, vol.212, Elsevier BV,2020-12.
+#
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # File: ./src/sun.jl
@@ -77,41 +80,49 @@ end
 ############################################################################################
 #
 # Finding the local sun position in local frame using the following data:
-#   JD = 2460065.945463
-#   Latitude = 51.0 °N
-#   Longitude = 10.0 °E
-#   Pressure = 1.0 atm
-#   Temperature = 20.0 °C
-#   Algorithm = 5
+#   JD = 2.458985282701389e6
+#   Latitude = 37.1 °N
+#   Longitude = -2.36 °W
 #
 # Calling the function as:
-#   sun_position_el(2460065.945463, 51.0, 10.0, 1.0, 20.0, 'e', '5')
+#   sun_position_el(2.458985282701389e6, 37.1, -2.36, 'a')
 #
 # Must result in :
-#   RA = 02h 34m 09s; ~ 38.5375 °
-#   DEC = +15° 06’ 42”; ~ 15.111667 °
+#   RA ~ 53.04443267321162 °
+#   DEC ~ 19.108142467612954 °
+#   HA ~ 100.31967018417757 °
+#   ZEN ~ 86.42495381753338 °
+#   AZM ~ 291.337579668121 °
+#   SUN ~ [-0.9296, 0.3632, 0.0624]
+#
+# Accuracy: 50 arcsecs ~ 0.0138889 ° [2, p. 341]
 #
 ############################################################################################
 
 @testset "Sun Position Local" begin
-    JD = 2460065.945463
-    Latitude = 51.0
-    Longitude = 10.0
-    Pressure = 1.0
-    Temperature = 20.0
+    JD = 2.458985282701389e6
+    Latitude = 37.1
+    Longitude = -2.36
 
-    # Tolerances for various algorithms
-    alg = ('1', '2', '3', '4', '5')
-    tol = (2e0, 2e0, 1e0, 1e0, 1e0)
+    # Tolerances
+    tol_ang = 1.38889e-2
+    tol_vec = 1e-2
 
-    for algorithm in 1:5
-        s_eq = sun_position_el(JD, Latitude, Longitude, Pressure, Temperature, 'e', alg[algorithm])
+    (ra, dec, ha, zen, az, sun) = sun_position_el(JD, Latitude, Longitude, 'a')
 
-        # Convert outputs to degrees
-        ra = s_eq[1]*180/π
-        dec = s_eq[2]*180/π
+    # Convert outputs to degrees
+    # ra = s_eq[1]
+    # dec = s_eq[2]
+    # ha = s_eq[3]
+    # zen = s_eq[4]
+    # az = s_eq[5]
+    # sun = s_eq[6]
 
-        @test ra ≈ 38.5375 atol = tol[algorithm]
-        @test dec ≈ 15.111667 atol = tol[algorithm]
-    end
+    @test ra ≈ 53.04443267321162 atol = tol_ang
+    @test dec ≈ 19.108142467612954 atol = tol_ang
+    @test ha ≈ 100.31967018417757 atol = tol_ang
+    @test zen ≈ 86.42495381753338 atol = tol_ang
+    @test az ≈ 291.337579668121 atol = tol_ang
+    @test sun ≈ [-0.9296, 0.3632, 0.0624] atol = tol_vec
+
 end
