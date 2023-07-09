@@ -110,19 +110,10 @@ end
 
     (ra, dec, ha, zen, az, sun) = sun_position_el(JD, Latitude, Longitude, 'a')
 
-    # Convert outputs to degrees
-    # ra = s_eq[1]
-    # dec = s_eq[2]
-    # ha = s_eq[3]
-    # zen = s_eq[4]
-    # az = s_eq[5]
-    # sun = s_eq[6]
-
     @test ra ≈ 53.04443267321162 atol = tol_ang
     @test dec ≈ 19.108142467612954 atol = tol_ang
     @test ha ≈ 100.31967018417757 atol = tol_ang
     @test zen ≈ 86.42495381753338 atol = tol_ang
     @test az ≈ 291.337579668121 atol = tol_ang
     @test sun ≈ [-0.9296, 0.3632, 0.0624] atol = tol_vec
-
 end
