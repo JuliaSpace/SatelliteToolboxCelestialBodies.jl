@@ -5,6 +5,7 @@ using StaticArrays
 
 @reexport using Dates
 @reexport using SatelliteToolboxBase
+@reexport using SatelliteToolboxTransformations
 
 ############################################################################################
 #                                         Includes

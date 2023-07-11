@@ -19,9 +19,12 @@
 #
 #   [4] The Astronomical Almanac for the year 2006.
 #
+#   [5] Blanco, Manuel Jesus, Milidonis, Kypros, Bonanos, Aristides. Updating the PSA sun
+#       position algorithm. Solar Energy, vol.212, Elsevier BV,2020-12.
+#
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-export sun_position_mod, sun_velocity_mod
+export sun_position_mod, sun_velocity_mod, sun_position_el
 
 """
     sun_position_mod(jd_tdb::Number) -> SVector{3, Float64}
@@ -59,10 +62,10 @@ function sun_position_mod(jd_tdb::Number)
     sin_2Ms = 2 * sin_Ms * cos_Ms
     cos_2Ms = cos_Ms * cos_Ms - sin_Ms * sin_Ms
 
-    # Mean longitude of the Sun [deg].
+    # Mean long of the Sun [deg].
     λ_m = 280.460 + 36_000.771t_tdb
 
-    # Ecliptic latitude of the Sun [deg].
+    # Ecliptic lat of the Sun [deg].
     λ_e = λ_m + 1.914_666_471sin_Ms + 0.019_994_643sin_2Ms
 
     # Obliquity of the ecliptic [deg].
@@ -133,10 +136,10 @@ function sun_velocity_mod(jd_tdb::Number)
     sin_2Ms = 2 * sin_Ms * cos_Ms
     cos_2Ms = cos_Ms * cos_Ms - sin_Ms * sin_Ms
 
-    # Mean longitude of the Sun [deg].
+    # Mean long of the Sun [deg].
     λ_m = 280.460 + 36_000.771t_tdb
 
-    # Ecliptic latitude of the Sun [deg].
+    # Ecliptic lat of the Sun [deg].
     λ_e = λ_m + 1.914_666_471sin_Ms + 0.019_994_643sin_2Ms
 
     # Obliquity of the ecliptic [deg].
@@ -172,4 +175,104 @@ function sun_velocity_mod(jd_tdb::Number)
     ]
 
     return vsun_mod
+end
+
+"""
+    sun_position_el(
+        jd::Number,
+        lat::Real=0.0,
+        long::Real=0.0,
+        flag::Char='l',
+    )
+
+Compute the Sun position represented in the Local Horizon Reference System at the
+Julian Day `jd`, lat `lat`, long `long`, Atmospheric pressure `Pressure`,
+Ambient Temperature `Temperature`, Output Flag `flag` and Algorithm `algorithm`. It utilises
+the PSA+ algorithm, (\\[5] (accessed on 2023-07-09)), to compute the topocentric sun position.
+
+# Inputs
+
+    - jd: Julian Day;
+    - lat: Latitude of the observer, in degrees, WSG84;
+    - long: Longitude of the observer, in degrees, WSG84;
+
+# Outputs
+
+## Equatorial system:
+    - α, Right Ascension in degrees;
+    - δ, Declination in degrees;
+
+## Local Coordinates:
+    - ω, Hour angle in degrees;
+    - θ, Zenith in degrees;
+    - γ, Azimuth in degrees;
+
+## Sun vector in (East, North, Zenith):
+    - SunVec, [Nx3] sun vector in (east, north, zenith);
+
+# References
+
+- **[5]**: Blanco, Manuel Jesus, Milidonis, Kypros, Bonanos, Aristides. Updating the PSA sun
+            position algorithm. Solar Energy, vol.212, Elsevier BV,2020-12.
+
+"""
+function sun_position_el(
+    jd::Real,
+    lat::Real=0.0,
+    long::Real=0.0,
+)
+    # Get time data from Julian Date `jd`
+    elapsedJD = jd - JD_J2000
+    _, _, _, Hour, Minute, Second = jd_to_date(jd)
+    DecimalHours = Hour + Minute/60.0 + Second/3600.0
+
+    # PSA+ Algorithm
+    ## Ecliptic Coordinates
+    Ω =  2.267127827e+00 - 9.300339267e-04*elapsedJD #
+    ML = 4.895036035e+00 + 1.720279602e-02*elapsedJD # Mean long
+    MA = 6.239468336e+00 + 1.720200135e-02*elapsedJD # Mean Anomaly
+
+    # Ecliptic long
+    λ₀ = (
+        ML + 3.338320972e-02*sin( MA )
+        + 3.497596876e-04 * sin( 2*MA ) - 1.544353226e-04
+        - 8.689729360e-06*sin( Ω )
+    )
+    # Ecliptic Obliquity
+    ϵ₀ = 4.090904909e-01 - 6.213605399e-09*elapsedJD + 4.418094944e-05*cos(Ω)
+
+    ## Celestial coordinates
+    # Right ascension & declination
+    dY1 = cos( ϵ₀ ) .* sin( λ₀ )
+    dX1 = cos( λ₀ )
+    α = mod2pi(atan( dY1, dX1))
+    δ = asin( sin( ϵ₀ ) .* sin( λ₀ ) )
+
+    ## Topocentric coordinates
+    # Greenwich & Local sidereal time
+    GMST = 6.697096103e+00 + 6.570984737e-02*elapsedJD + DecimalHours
+    LMST = deg2rad( GMST*15 + long )
+    # Hour angle
+    ω = mod2pi(LMST - α)
+
+    # Local coordinates
+    # Zenith
+    θ = acos(cosd(lat)*cos( ω ).*cos( δ ) + sin( δ )*sind(lat))
+    dY2 = -sin(ω)
+    dX2 = tan( δ) * cosd( lat ) - sind(lat)*cos(ω)
+    # Azimuth
+    γ = mod2pi(atan(dY2, dX2))
+
+    # Parallax correction
+    # ToDo: Add radius of earth in Base constants? Then import and replace it below?
+    θ += 6371.01e+03/ASTRONOMICAL_UNIT * sin(θ)
+
+    # East North Zenith Frame
+    SunVec = [
+        sin(γ).*sin(θ),
+        cos(γ).*sin(θ),
+        cos(θ)
+    ]
+
+    return (rad2deg(α), rad2deg(δ), rad2deg(ω), rad2deg(θ), rad2deg(γ), SunVec)
 end
