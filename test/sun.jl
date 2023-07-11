@@ -85,7 +85,7 @@ end
 #   Longitude = -2.36 °W
 #
 # Calling the function as:
-#   sun_position_el(2.458985282701389e6, 37.1, -2.36, 'a')
+#   sun_position_el(2.458985282701389e6, 37.1, -2.36)
 #
 # Must result in :
 #   RA ~ 53.04443267321162 °
@@ -108,7 +108,7 @@ end
     tol_ang = 1.38889e-2
     tol_vec = 1e-2
 
-    (ra, dec, ha, zen, az, sun) = sun_position_el(JD, Latitude, Longitude, 'a')
+    (ra, dec, ha, zen, az, sun) = sun_position_el(JD, Latitude, Longitude)
 
     @test ra ≈ 53.04443267321162 atol = tol_ang
     @test dec ≈ 19.108142467612954 atol = tol_ang

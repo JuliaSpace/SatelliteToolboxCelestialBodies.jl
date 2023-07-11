@@ -195,24 +195,20 @@ the PSA+ algorithm, (\\[5] (accessed on 2023-07-09)), to compute the topocentric
     - jd: Julian Day;
     - lat: Latitude of the observer, in degrees, WSG84;
     - long: Longitude of the observer, in degrees, WSG84;
-    - flag: The output flag to decide what outputs are needed;
 
 # Outputs
 
-## Equatorial system: flag `-e`
+## Equatorial system:
     - α, Right Ascension in degrees;
     - δ, Declination in degrees;
 
-## Local Coordinates: flag `-l`
+## Local Coordinates:
     - ω, Hour angle in degrees;
     - θ, Zenith in degrees;
     - γ, Azimuth in degrees;
 
-## Sun vector in (East, North, Zenith): flag `-v`
+## Sun vector in (East, North, Zenith):
     - SunVec, [Nx3] sun vector in (east, north, zenith);
-
-## All: flag `-a`
-    - all outputs
 
 # References
 
@@ -224,11 +220,10 @@ function sun_position_el(
     jd::Real,
     lat::Real=0.0,
     long::Real=0.0,
-    flag::Char='l',
 )
     # Get time data from Julian Date `jd`
     elapsedJD = jd - JD_J2000
-    Year, Month, Day, Hour, Minute, Second = jd_to_date(jd)
+    _, _, _, Hour, Minute, Second = jd_to_date(jd)
     DecimalHours = Hour + Minute/60.0 + Second/3600.0
 
     # PSA+ Algorithm
@@ -253,34 +248,24 @@ function sun_position_el(
     α = mod2pi(atan( dY1, dX1))
     δ = asin( sin( ϵ₀ ) .* sin( λ₀ ) )
 
-    # Switch output based on the output flag `flag`
-    (flag == 'e') ? (return (rad2deg(α), rad2deg(δ))) : nothing # Equtorial System
-
     ## Topocentric coordinates
     # Greenwich & Local sidereal time
     GMST = 6.697096103e+00 + 6.570984737e-02*elapsedJD + DecimalHours
-    LMST = ( GMST*15 + long )*π/180
+    LMST = deg2rad( GMST*15 + long )
     # Hour angle
     ω = mod2pi(LMST - α)
 
     # Local coordinates
     # Zenith
-    θ = (
-        acos(
-            cosd(lat)*cos( ω ).*cos( δ )
-            + sin( δ )*sind(lat)
-        )
-    )
+    θ = acos(cosd(lat)*cos( ω ).*cos( δ ) + sin( δ )*sind(lat))
     dY2 = -sin(ω)
     dX2 = tan( δ) * cosd( lat ) - sind(lat)*cos(ω)
     # Azimuth
     γ = mod2pi(atan(dY2, dX2))
 
     # Parallax correction
-    θ += 6371.01/149597870.7 * sin(θ)
-
-    # Switch output based on the output flag `flag`
-    (flag == 'l') ? (return (rad2deg(ω), rad2deg(θ), rad2deg(γ))) : nothing # Local Coordinates
+    # ToDo: Add radius of earth in Base constants? Then import and replace it below?
+    θ += 6371.01e+03/ASTRONOMICAL_UNIT * sin(θ)
 
     # East North Zenith Frame
     SunVec = [
@@ -289,7 +274,5 @@ function sun_position_el(
         cos(θ)
     ]
 
-    # Switch output based on the output flag `flag`
-    (flag == 'v') ? (return SunVec) : nothing # Local Coord
-    (flag == 'a') ? (return (rad2deg(α), rad2deg(δ), rad2deg(ω), rad2deg(θ), rad2deg(γ), SunVec)) : nothing # all
+    return (rad2deg(α), rad2deg(δ), rad2deg(ω), rad2deg(θ), rad2deg(γ), SunVec)
 end
