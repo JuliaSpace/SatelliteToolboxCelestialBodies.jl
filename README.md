@@ -17,7 +17,7 @@ bodies for the **SatelliteToolbox.jl** ecosystem.
 
 ```julia
 julia> using Pkg
-julia> Pkg.install("SatelliteToolboxCelestialBodies.jl")
+julia> Pkg.add("SatelliteToolboxCelestialBodies.jl")
 ```
 
 ## Usage
