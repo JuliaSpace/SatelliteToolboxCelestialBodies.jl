@@ -13,6 +13,9 @@
 #   [1] Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
 #       Microcosm Press, Hawthorn, CA, USA.
 #
+#   [2] Blanco, Manuel Jesus, Milidonis, Kypros, Bonanos, Aristides. Updating the PSA sun
+#       position algorithm. Solar Energy, vol.212, Elsevier BV,2020-12.
+#
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # File: ./src/sun.jl
@@ -70,4 +73,47 @@ end
 
         @test norm(v - v_n) / norm(v) * 100 < 0.055
     end
+end
+
+############################################################################################
+#                                       Test Results
+############################################################################################
+#
+# Finding the local sun position in local frame using the following data:
+#   JD = 2.458985282701389e6
+#   Latitude = 37.1 °N
+#   Longitude = -2.36 °W
+#
+# Calling the function as:
+#   sun_position_el(2.458985282701389e6, 37.1, -2.36)
+#
+# Must result in :
+#   RA ~ 53.04443267321162 °
+#   DEC ~ 19.108142467612954 °
+#   HA ~ 100.31967018417757 °
+#   ZEN ~ 86.42495381753338 °
+#   AZM ~ 291.337579668121 °
+#   SUN ~ [-0.9296, 0.3632, 0.0624]
+#
+# Accuracy: 50 arcsecs ~ 0.0138889 ° [2, p. 341]
+#
+############################################################################################
+
+@testset "Sun Position Local" begin
+    JD = 2.458985282701389e6
+    Latitude = 37.1
+    Longitude = -2.36
+
+    # Tolerances
+    tol_ang = 1.38889e-2
+    tol_vec = 1e-2
+
+    (ra, dec, ha, zen, az, sun) = sun_position_el(JD, Latitude, Longitude)
+
+    @test ra ≈ 53.04443267321162 atol = tol_ang
+    @test dec ≈ 19.108142467612954 atol = tol_ang
+    @test ha ≈ 100.31967018417757 atol = tol_ang
+    @test zen ≈ 86.42495381753338 atol = tol_ang
+    @test az ≈ 291.337579668121 atol = tol_ang
+    @test sun ≈ [-0.9296, 0.3632, 0.0624] atol = tol_vec
 end
