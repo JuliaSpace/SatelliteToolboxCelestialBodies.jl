@@ -3,7 +3,7 @@ uuid = "b0edd99f-a7ca-4aa6-9a1e-a53e8f506046"
 license = "MIT"
 desc = "General functions related to celestial bodies for the SatelliteToolbox.jl ecosystem"
 authors = ["Ronan Arraes Jardim Chagas <ronisbr@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
