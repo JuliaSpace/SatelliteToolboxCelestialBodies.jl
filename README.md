@@ -3,8 +3,7 @@
   <small><i>This package is part of the <a href="https://github.com/JuliaSpace/SatelliteToolbox.jl">SatelliteToolbox.jl</a> ecosystem.</i></small>
 </p>
 
-SatelliteToolboxCelestialBodies.jl
-==================================
+# SatelliteToolboxCelestialBodies.jl
 
 [![CI](https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/JuliaSpace/SatelliteToolboxCelestialBodies.jl/branch/main/graph/badge.svg?token=CONQMSI4JD)](https://codecov.io/gh/JuliaSpace/SatelliteToolboxCelestialBodies.jl)
@@ -28,8 +27,8 @@ We can compute the Sun position represented in the Mean-Of-Date (MOD) reference 
 **[1]** using the functions:
 
 ```julia
-function sun_position_mod(jd_tdb::Number)
-function sun_position_mod(date_tdb::DateTime)
+sun_position_mod(jd_tdb::Number) -> SVector{3, Float64}
+sun_position_mod(date_tdb::DateTime) -> SVector{3, Float64}
 ```
 
 where the input time `jd_tdb` (Julian Day) or `date_tdb` must be represented in the
@@ -47,8 +46,8 @@ We can also compute the Sun velocity represented in MOD frame as measured by an 
 the same frame:
 
 ```julia
-function sun_velocity_mod(jd_tdb::Number)
-function sun_velocity_mod(date_tdb::DateTime)
+sun_velocity_mod(jd_tdb::Number) -> SVector{3, Float64}
+sun_velocity_mod(date_tdb::DateTime) -> SVector{3, Float64}
 ```
 
 where the input time `jd_tdb` (Julian Day) or `date_tdb` must be represented in the
@@ -71,8 +70,8 @@ We can compute the Moon position represented in the Mean-Of-Date (MOD) reference
 **[1, 2]** using the functions:
 
 ``` julia
-function moon_position_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
-function moon_position_mod(date_tdb::DateTime[, model]) -> SVector{3, Float64}
+moon_position_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
+moon_position_mod(date_tdb::DateTime[, model]) -> SVector{3, Float64}
 ```
 
 where the input time `jd_tdb` (Julian Day) or `date_tdb` must be represented in the
@@ -110,4 +109,5 @@ since the extensive feature list in the other packages is unnecessary here.
 
 - **[1]** **Vallado, D. A** (2013). *Fundamentals of Astrodynamics and Applications*. 4th
   ed. **Microcosm Press**, Hawthorn, CA, USA.
-- **[2]** **Meeus, J** (1998). *Astronomical algorithms*. **Willmann-Bell, Inc**, Richmond, VA.
+- **[2]** **Meeus, J** (1998). *Astronomical algorithms*. **Willmann-Bell, Inc**, Richmond,
+  VA.
