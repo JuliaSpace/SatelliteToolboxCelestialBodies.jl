@@ -1,18 +1,12 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+## Description #############################################################################
 #
-# Description
-# ==========================================================================================
+# Constants use to compute the position of the Moon.
 #
-#   Constants use to compute the position of the Moon.
+## References ##############################################################################
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# [1] Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
 #
-# References
-# ==========================================================================================
-#
-#   [1] Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
-#
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+############################################################################################
 
 # Those tables were obtained from [1, pp. 339-341]. They are used to compute the Moon
 # position vector.

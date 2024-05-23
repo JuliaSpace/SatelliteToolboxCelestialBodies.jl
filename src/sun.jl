@@ -1,25 +1,19 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+## Description #############################################################################
 #
-# Description
-# ==========================================================================================
+# Compute the Sun position and velocity.
 #
-#   Compute the Sun position and velocity.
+## References ##############################################################################
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# [1] The Astronomical Almanac for the year 2000 (p. C24).
 #
-# References
-# ==========================================================================================
+# [2] http://aa.usno.navy.mil/faq/docs/SunApprox.php
 #
-#   [1] The Astronomical Almanac for the year 2000 (p. C24).
+# [3] Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
+#     Microcosm Press, Hawthorne, CA.
 #
-#   [2] http://aa.usno.navy.mil/faq/docs/SunApprox.php
+# [4] The Astronomical Almanac for the year 2006.
 #
-#   [3] Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
-#       Microcosm Press, Hawthorne, CA.
-#
-#   [4] The Astronomical Almanac for the year 2006.
-#
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+############################################################################################
 
 export sun_position_mod, sun_velocity_mod
 
@@ -109,8 +103,7 @@ function sun_velocity_mod(jd_tdb::Number)
     # Convert centuries to seconds.
     cen2s = 1 / (36525.0 * 86400.0)
 
-    # Sun position
-    # ======================================================================================
+    # == Sun Position ======================================================================
 
     # TODO: Check if we can split this algorithm in a new function.
     #
@@ -153,8 +146,7 @@ function sun_velocity_mod(jd_tdb::Number)
     # Distance of the Sun from Earth [m].
     r = (1.000_140_612 - 0.016_708_617cos_Ms - 0.000_139_589cos_2Ms) * ASTRONOMICAL_UNIT
 
-    # Sun velocity
-    # ==========================================================================
+    # == Sun Velocity ======================================================================
 
     # Compute the required time derivatives [rad/s].
     ∂λ_m = deg2rad(36_000.771)   * cen2s

@@ -1,21 +1,15 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+## Description #############################################################################
 #
-# Description
-# ==========================================================================================
+# Compute the Moon position.
 #
-#   Compute the Moon position.
+## References ##############################################################################
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# [1] Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
+#     Microcosm Press, Hawthorne, CA.
 #
-# References
-# ==========================================================================================
+# [2] Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
 #
-#   [1] Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
-#       Microcosm Press, Hawthorne, CA.
-#
-#   [2] Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
-#
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+############################################################################################
 
 export moon_position_mod
 
@@ -34,6 +28,7 @@ The `model` must be `Val(:Meeus)` or `Val(:Vallado)`. `Val(:Meeus)` uses the alg
 longitude and 0.2° in latitude.
 
 !!! note
+
     This function performs all the computations using `Float64` due to the necessary
     precision.
 
