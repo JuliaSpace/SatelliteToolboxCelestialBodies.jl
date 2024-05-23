@@ -8,6 +8,7 @@
 [![CI](https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/JuliaSpace/SatelliteToolboxCelestialBodies.jl/branch/main/graph/badge.svg?token=CONQMSI4JD)](https://codecov.io/gh/JuliaSpace/SatelliteToolboxCelestialBodies.jl)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
+[![DOI](https://zenodo.org/badge/644101195.svg)](https://zenodo.org/doi/10.5281/zenodo.11262848)
 
 This package contains functions to compute the position and velocity of some celestial
 bodies for the **SatelliteToolbox.jl** ecosystem.
