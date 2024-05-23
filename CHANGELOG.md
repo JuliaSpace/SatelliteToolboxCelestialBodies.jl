@@ -1,6 +1,11 @@
 SatelliteToolboxCelestialBodies.jl Changelog
 ============================================
 
+Version 0.1.2
+-------------
+
+- ![Enhancement][badge-enhancement] Documentation update and minor source-code improvements.
+
 Version 0.1.1
 -------------
 
