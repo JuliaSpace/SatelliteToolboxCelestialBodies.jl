@@ -12,9 +12,13 @@ SatelliteToolboxBase = "9e17983a-0463-41a7-9a16-1682db6d8b66"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
+Dates = "1.6"
+LinearAlgebra = "1.6"
 Reexport = "1"
+ReferenceFrameRotations = "3"
 SatelliteToolboxBase = "0.2.1, 0.3"
 StaticArrays = "1"
+Test = "1.6"
 julia = "1.6"
 
 [extras]
