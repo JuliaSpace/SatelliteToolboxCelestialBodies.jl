@@ -12,14 +12,14 @@ SatelliteToolboxBase = "9e17983a-0463-41a7-9a16-1682db6d8b66"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
-Dates = "1.6"
-LinearAlgebra = "1.6"
+Dates = "1.10"
+LinearAlgebra = "1.10"
 Reexport = "1"
 ReferenceFrameRotations = "3"
-SatelliteToolboxBase = "0.2.1, 0.3"
+SatelliteToolboxBase = "1"
 StaticArrays = "1"
-Test = "1.6"
-julia = "1.6"
+Test = "1.10"
+julia = "1.10"
 
 [extras]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
