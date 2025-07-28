@@ -36,7 +36,7 @@ Barycentric Dynamical Time (TDB). The algorithm was adapted from [1, pp. 277-279
 """
 sun_position_mod(date_tdb::DateTime) = sun_position_mod(datetime2julian(date_tdb))
 
-function sun_position_mod(jd_tdb::Number)
+function sun_position_mod(jd_tdb::T) where T <: Number
     # Number of Julian centuries from J2000 epoch.
     t_tdb = (jd_tdb - JD_J2000) / 36525
 
@@ -74,7 +74,7 @@ function sun_position_mod(jd_tdb::Number)
     r = (1.000_140_612 - 0.016_708_617cos_Ms - 0.000_139_589cos_2Ms) * ASTRONOMICAL_UNIT
 
     # Compute the Sun vector represented in the Mean Equinox of Date (MOD).
-    s_mod = @SVector [r * cos_λ_e, r * cos_ϵ * sin_λ_e, r * sin_ϵ * sin_λ_e]
+    s_mod = SVector{3, T}(r * cos_λ_e, r * cos_ϵ * sin_λ_e, r * sin_ϵ * sin_λ_e)
 
     return s_mod
 end
@@ -99,7 +99,7 @@ the time derivative of the Sun position in [1, p. 277-279].
 """
 sun_velocity_mod(date_tdb::DateTime) = sun_velocity_mod(datetime2julian(date_tdb))
 
-function sun_velocity_mod(jd_tdb::Number)
+function sun_velocity_mod(jd_tdb::T) where T <: Number
     # Convert centuries to seconds.
     cen2s = 1 / (36525.0 * 86400.0)
 
@@ -157,11 +157,11 @@ function sun_velocity_mod(jd_tdb::Number)
 
     # Compute the Sun velocity vector represented in the Mean Equinox of Date
     # (MOD).
-    vsun_mod = @SVector [
+    vsun_mod = SVector{3, T}(
         ∂r * cos_λ_e -                                    r * sin_λ_e * ∂λ_e,
         ∂r * cos_ϵ * sin_λ_e - r * sin_ϵ * sin_λ_e * ∂ϵ + r * cos_ϵ * cos_λ_e * ∂λ_e,
         ∂r * sin_ϵ * sin_λ_e + r * cos_ϵ * sin_λ_e * ∂ϵ + r * sin_ϵ * cos_λ_e * ∂λ_e
-    ]
+    )
 
     return vsun_mod
 end
