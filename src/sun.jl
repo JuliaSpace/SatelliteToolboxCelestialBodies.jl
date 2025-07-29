@@ -74,7 +74,7 @@ function sun_position_mod(jd_tdb::Number)
     r = (1.000_140_612 - 0.016_708_617cos_Ms - 0.000_139_589cos_2Ms) * ASTRONOMICAL_UNIT
 
     # Compute the Sun vector represented in the Mean Equinox of Date (MOD).
-    s_mod = @SVector [r * cos_λ_e, r * cos_ϵ * sin_λ_e, r * sin_ϵ * sin_λ_e]
+    s_mod = SVector{3}(r * cos_λ_e, r * cos_ϵ * sin_λ_e, r * sin_ϵ * sin_λ_e)
 
     return s_mod
 end
@@ -157,11 +157,11 @@ function sun_velocity_mod(jd_tdb::Number)
 
     # Compute the Sun velocity vector represented in the Mean Equinox of Date
     # (MOD).
-    vsun_mod = @SVector [
+    vsun_mod = SVector{3}(
         ∂r * cos_λ_e -                                    r * sin_λ_e * ∂λ_e,
         ∂r * cos_ϵ * sin_λ_e - r * sin_ϵ * sin_λ_e * ∂ϵ + r * cos_ϵ * cos_λ_e * ∂λ_e,
         ∂r * sin_ϵ * sin_λ_e + r * cos_ϵ * sin_λ_e * ∂ϵ + r * sin_ϵ * cos_λ_e * ∂λ_e
-    ]
+    )
 
     return vsun_mod
 end

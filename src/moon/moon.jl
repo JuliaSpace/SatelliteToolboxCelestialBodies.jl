@@ -207,11 +207,11 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Meeus})
     sin_β, cos_β = sincos(β)
     sin_ϵ, cos_ϵ = sincos(ϵ)
 
-    r_moon_mod = @SVector [
+    r_moon_mod = SVector{3}(
         Δ * cos_β * cos_λ,
         Δ * (cos_ϵ * cos_β * sin_λ - sin_ϵ * sin_β),
         Δ * (sin_ϵ * cos_β * sin_λ + cos_ϵ * sin_β)
-    ]
+    )
 
     return r_moon_mod
 end
@@ -263,11 +263,11 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Vallado})
 
     # Compute the Moon vector represented in MOD (IAU-76/KF5 mean-equator,
     # mean-equinox of date).
-    r_moon_mod = @SVector [
+    r_moon_mod = SVector{3}(
         r * (cos_ϕ * cos_λ),
         r * (cos_ϵ * cos_ϕ * sin_λ - sin_ϵ * sin_ϕ),
         r * (sin_ϵ * cos_ϕ * sin_λ + cos_ϵ * sin_ϕ)
-    ]
+    )
 
     return r_moon_mod
 end
