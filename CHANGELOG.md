@@ -1,6 +1,11 @@
 SatelliteToolboxCelestialBodies.jl Changelog
 ============================================
 
+Version 1.0.1
+-------------
+
+- ![Enhancement][badge-enhancement] The package now supports Zygote 0.7. (PR [#4][gh-pr-4])
+
 Verion 1.0.0
 ------------
 
@@ -31,3 +36,5 @@ Version 0.1.0
 [badge-enhancement]: https://img.shields.io/badge/Enhancement-blue.svg
 [badge-bugfix]: https://img.shields.io/badge/Bugfix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
+
+[gh-pr-4]: https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/pull/4
