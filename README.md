@@ -98,6 +98,33 @@ julia> moon_position_mod(now(), Val(:Vallado))
   1.8647115876567587e8
 ```
 
+We can also compute the Moon velocity represented in MOD frame as measured by an observer in
+the same frame:
+
+```julia
+moon_velocity_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
+moon_velocity_mod(date_tdb::DateTime[, model]) -> SVector{3, Float64}
+```
+
+where the input time and `model` arguments are the same as for `moon_position_mod`.
+
+> **Note**
+> This algorithm was obtained by differentiating the Moon position equations in **[1, 2]**.
+
+```julia
+julia> moon_velocity_mod(now())
+3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
+ -897.5428622498892
+ -103.71757584498875
+  -35.86412227498765
+
+julia> moon_velocity_mod(now(), Val(:Vallado))
+3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
+ -897.1062248189247
+ -103.83122252784882
+  -35.23414818498116
+```
+
 ## Rationale
 
 The packages in [JuliaAstro](https://github.com/JuliaAstro) provide the same functionality
