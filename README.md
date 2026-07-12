@@ -5,10 +5,11 @@
 
 # SatelliteToolboxCelestialBodies.jl
 
-[![CI](https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/JuliaSpace/SatelliteToolboxCelestialBodies.jl/branch/main/graph/badge.svg?token=CONQMSI4JD)](https://codecov.io/gh/JuliaSpace/SatelliteToolboxCelestialBodies.jl)
-[![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
-[![DOI](https://zenodo.org/badge/644101195.svg)](https://zenodo.org/doi/10.5281/zenodo.11262848)
+[![CI](https://img.shields.io/github/actions/workflow/status/JuliaSpace/SatelliteToolboxCelestialBodies.jl/ci.yml?style=flat-square&logo=githubactions&logoColor=white&labelColor=475569&label=CI)](https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/actions/workflows/ci.yml)
+[![Codecov](https://img.shields.io/codecov/c/github/JuliaSpace/SatelliteToolboxCelestialBodies.jl?token=CONQMSI4JD&style=flat-square&logo=codecov&logoColor=white&labelColor=475569)](https://codecov.io/gh/JuliaSpace/SatelliteToolboxCelestialBodies.jl)
+[![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495D1?style=flat-square&labelColor=475569)](https://github.com/invenia/BlueStyle)
+[![License](https://img.shields.io/github/license/JuliaSpace/SatelliteToolboxCelestialBodies.jl?style=flat-square&logo=readme&logoColor=white&labelColor=475569&color=0284C7)](https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/blob/main/LICENSE.txt)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.11262848-DB2777?style=flat-square&logo=doi&logoColor=white&labelColor=475569)](https://zenodo.org/doi/10.5281/zenodo.11262848)
 
 This package contains functions to compute the position and velocity of some celestial
 bodies for the **SatelliteToolbox.jl** ecosystem.
