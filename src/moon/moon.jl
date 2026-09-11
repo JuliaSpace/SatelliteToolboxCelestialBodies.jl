@@ -15,7 +15,7 @@ export moon_position_mod, moon_velocity_mod, moon_state_mod
 
 """
     moon_position_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
-    moon_position_mod(date_tdb::DateTime[, model]) -> SVector{3, Float64}
+    moon_position_mod(date_tdb::Union{Date, DateTime}[, model]) -> SVector{3, Float64}
 
 Compute the Moon position represented in the IAU-76/FK5 MOD (mean-equator, mean-equinox of
 date) at the Julian Day `jd_tdb` or `date_tdb`. The input time must be represented in the
@@ -38,11 +38,11 @@ longitude and 0.2° in latitude.
     Microcosm Press, Hawthorne, CA.
 - **[2]** Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
 """
-moon_position_mod(date_tdb::DateTime) = moon_position_mod(date_tdb, Val(:Meeus))
+moon_position_mod(date_tdb::Union{Date, DateTime}) = moon_position_mod(date_tdb, Val(:Meeus))
 moon_position_mod(jd_tdb::Number) = moon_position_mod(jd_tdb, Val(:Meeus))
 
-function moon_position_mod(date_tdb::DateTime, model::Val)
-    return moon_position_mod(datetime2julian(date_tdb), model)
+function moon_position_mod(date_tdb::Union{Date, DateTime}, model::Val)
+    return moon_position_mod(datetime2julian(DateTime(date_tdb)), model)
 end
 
 # NOTE: Computing the velocity together with the position adds only a few operations per
@@ -51,7 +51,7 @@ moon_position_mod(jd_tdb::Number, model::Val) = moon_state_mod(jd_tdb, model)[1]
 
 """
     moon_velocity_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
-    moon_velocity_mod(date_tdb::DateTime[, model]) -> SVector{3, Float64}
+    moon_velocity_mod(date_tdb::Union{Date, DateTime}[, model]) -> SVector{3, Float64}
 
 Compute the Moon velocity measured and represented in the IAU-76/FK5 MOD (mean-equator,
 mean-equinox of date) at the Julian Day `jd_tdb` or `date_tdb`. The input time must be
@@ -72,11 +72,11 @@ details on the accuracy of each model.
     Microcosm Press, Hawthorne, CA.
 - **[2]** Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
 """
-moon_velocity_mod(date_tdb::DateTime) = moon_velocity_mod(date_tdb, Val(:Meeus))
+moon_velocity_mod(date_tdb::Union{Date, DateTime}) = moon_velocity_mod(date_tdb, Val(:Meeus))
 moon_velocity_mod(jd_tdb::Number) = moon_velocity_mod(jd_tdb, Val(:Meeus))
 
-function moon_velocity_mod(date_tdb::DateTime, model::Val)
-    return moon_velocity_mod(datetime2julian(date_tdb), model)
+function moon_velocity_mod(date_tdb::Union{Date, DateTime}, model::Val)
+    return moon_velocity_mod(datetime2julian(DateTime(date_tdb)), model)
 end
 
 moon_velocity_mod(jd_tdb::Number, model::Val) = moon_state_mod(jd_tdb, model)[2]
@@ -87,7 +87,7 @@ moon_velocity_mod(jd_tdb::Number, model::Val) = moon_state_mod(jd_tdb, model)[2]
 
 """
     moon_state_mod(jd_tdb::Number[, model]) -> SVector{3, T}, SVector{3, T}
-    moon_state_mod(date_tdb::DateTime[, model]) -> SVector{3, Float64}, SVector{3, Float64}
+    moon_state_mod(date_tdb::Union{Date, DateTime}[, model]) -> SVector{3, Float64}, SVector{3, Float64}
 
 Compute the Moon position [m] and velocity [m/s] represented in the IAU-76/FK5 MOD
 (mean-equator, mean-equinox of date) at the Julian Day `jd_tdb` or at the date `date_tdb`,
@@ -108,7 +108,7 @@ See also: [`moon_position_mod`](@ref), [`moon_velocity_mod`](@ref)
 # Arguments
 
 - `jd_tdb::Number`: Julian Day [TDB] at which the state must be computed.
-- `date_tdb::DateTime`: Date [TDB] at which the state must be computed.
+- `date_tdb::Union{Date, DateTime}`: Date [TDB] at which the state must be computed.
 - `model::Val`: Algorithm used to compute the Moon state.
     (**Default**: `Val(:Meeus)`)
 
@@ -131,11 +131,11 @@ Hence, `Float32` inputs yield `Float64` results because the precision of the ser
 requires it, whereas wider types, such as `BigFloat` or automatic differentiation numbers,
 propagate to the output.
 """
-moon_state_mod(date_tdb::DateTime) = moon_state_mod(date_tdb, Val(:Meeus))
+moon_state_mod(date_tdb::Union{Date, DateTime}) = moon_state_mod(date_tdb, Val(:Meeus))
 moon_state_mod(jd_tdb::Number) = moon_state_mod(jd_tdb, Val(:Meeus))
 
-function moon_state_mod(date_tdb::DateTime, model::Val)
-    return moon_state_mod(datetime2julian(date_tdb), model)
+function moon_state_mod(date_tdb::Union{Date, DateTime}, model::Val)
+    return moon_state_mod(datetime2julian(DateTime(date_tdb)), model)
 end
 
 function moon_state_mod(jd_tdb::Number, ::Val{:Meeus})

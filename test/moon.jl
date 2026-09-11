@@ -179,4 +179,15 @@ end
 
     @test moon_state_mod(jd_tdb) == moon_state_mod(jd_tdb, Val(:Meeus))
     @test moon_state_mod(date_tdb) == moon_state_mod(date_tdb, Val(:Meeus))
+
+    # A `Date` must be interpreted as the beginning of the day.
+    for model in (Val(:Meeus), Val(:Vallado))
+        @test moon_state_mod(Date(1994, 4, 28), model) == moon_state_mod(jd_tdb, model)
+        @test moon_position_mod(Date(1994, 4, 28), model) == moon_position_mod(jd_tdb, model)
+        @test moon_velocity_mod(Date(1994, 4, 28), model) == moon_velocity_mod(jd_tdb, model)
+    end
+
+    @test moon_state_mod(Date(1994, 4, 28)) == moon_state_mod(jd_tdb)
+    @test moon_position_mod(Date(1994, 4, 28)) == moon_position_mod(jd_tdb)
+    @test moon_velocity_mod(Date(1994, 4, 28)) == moon_velocity_mod(jd_tdb)
 end

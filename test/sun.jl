@@ -85,4 +85,9 @@ end
     @test s_mod == sun_position_mod(jd_tdb)
     @test ṡ_mod == sun_velocity_mod(jd_tdb)
     @test sun_state_mod(date_tdb) == (s_mod, ṡ_mod)
+
+    # A `Date` must be interpreted as the beginning of the day.
+    @test sun_state_mod(Date(2006, 4, 2)) == (s_mod, ṡ_mod)
+    @test sun_position_mod(Date(2006, 4, 2)) == s_mod
+    @test sun_velocity_mod(Date(2006, 4, 2)) == ṡ_mod
 end
