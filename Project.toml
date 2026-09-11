@@ -12,7 +12,10 @@ SatelliteToolboxBase = "9e17983a-0463-41a7-9a16-1682db6d8b66"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
+Aqua = "0.8"
 Dates = "1.10"
+ForwardDiff = "0.10, 1"
+JET = "0.9, 0.10, 0.11, 0.12"
 LinearAlgebra = "1.10"
 Reexport = "1"
 ReferenceFrameRotations = "3"
@@ -22,9 +25,12 @@ Test = "1.10"
 julia = "1.10"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 ReferenceFrameRotations = "74f56ac7-18b3-5285-802d-d4bd4f104033"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "LinearAlgebra", "ReferenceFrameRotations"]
+test = ["Aqua", "ForwardDiff", "JET", "LinearAlgebra", "ReferenceFrameRotations", "Test"]
