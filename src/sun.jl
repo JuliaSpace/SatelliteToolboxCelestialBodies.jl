@@ -152,7 +152,7 @@ function sun_velocity_mod(jd_tdb::Number)
     ∂λ_m = deg2rad(36_000.771)   * cen2s
     ∂Ms  = deg2rad(35_999.05034) * cen2s
     ∂ϵ   = deg2rad(-0.0130042)  * cen2s
-    ∂r   = (+0.016708617sin_Ms * ∂Ms + 2 * 0.000139589cos_2Ms * ∂Ms) * ASTRONOMICAL_UNIT
+    ∂r   = (+0.016708617sin_Ms * ∂Ms + 2 * 0.000139589sin_2Ms * ∂Ms) * ASTRONOMICAL_UNIT
     ∂λ_e = ∂λ_m + deg2rad(1.914666471cos_Ms * ∂Ms + 2 * 0.019994643cos_2Ms * ∂Ms)
 
     # Compute the Sun velocity vector represented in the Mean Equinox of Date

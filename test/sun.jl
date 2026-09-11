@@ -51,14 +51,16 @@ end
     jd_start = date_to_jd(1950, 1, 1, 0, 0, 0)
     jd_stop  = date_to_jd(2019, 1, 1, 0, 0, 0)
 
+    # We use a central difference with a step of 10 s. Smaller steps are dominated by the
+    # rounding error of the Julian day representation.
     for _ in 1:100
         jd_tdb = rand(jd_start:jd_stop)
-        Δt     = 0.1
-        s_t₁   = sun_position_mod(jd_tdb |> julian2datetime)
+        Δt     = 10.0
+        s_t₁   = sun_position_mod(jd_tdb - Δt / 86400 |> julian2datetime)
         s_t₂   = sun_position_mod(jd_tdb + Δt / 86400 |> julian2datetime)
-        v_n    = (s_t₂ - s_t₁) / Δt
+        v_n    = (s_t₂ - s_t₁) / (2Δt)
         v      = sun_velocity_mod(jd_tdb |> julian2datetime)
 
-        @test norm(v - v_n) / norm(v) * 100 < 0.055
+        @test norm(v - v_n) / norm(v) * 100 < 0.001
     end
 end
