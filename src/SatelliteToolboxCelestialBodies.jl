@@ -12,6 +12,8 @@ using StaticArrays
 @reexport using Dates
 @reexport using SatelliteToolboxBase
 
+import PrecompileTools
+
 ############################################################################################
 #                                        Constants                                         #
 ############################################################################################
@@ -27,5 +29,7 @@ include("./moon/constants.jl")
 include("./moon/moon.jl")
 
 include("./sun.jl")
+
+include("./precompile.jl")
 
 end # module SatelliteToolboxCelestialBodies
