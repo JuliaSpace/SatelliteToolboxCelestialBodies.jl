@@ -49,7 +49,7 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Meeus})
     # Number of Julian centuries from J2000 epoch.
     t_tdb = (jd_tdb - JD_J2000) / 36525
 
-    # Moon's mean latitude referred to the mean equinox of data [deg].
+    # Moon's mean longitude referred to the mean equinox of date [deg].
     L´ = @evalpoly(
         t_tdb,
         +218.316_447_7,
@@ -200,7 +200,7 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Meeus})
 
     # Compute the Moon vector in MOD [m].
     #
-    # Notice that λ and β provide us the geocentric latitude and longitude of the Moon
+    # Notice that λ and β provide us the geocentric longitude and latitude of the Moon
     # w.r.t. the mean equator of date in the ecliptic plane. Hence, we need also to rotate
     # the mean ecliptic to obtain the vector in the MOD.
     sin_λ, cos_λ = sincos(λ)
@@ -232,10 +232,10 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Vallado})
     sin5       = sin(deg2rad(357.5 +  35_999.05t_tdb))
     sin6       = sin(deg2rad(186.6 + 966_404.05t_tdb))
 
-    # Ecliptic latitude of the Moon [deg].
+    # Ecliptic longitude of the Moon [deg].
     λₑ = 218.32 + 481_267.8813t_tdb + 6.29sin1 - 1.27sin2 + 0.66sin3 + 0.21sin4 - 0.19sin5 - 0.11sin6
 
-    # Ecliptic longitude of the Moon [deg].
+    # Ecliptic latitude of the Moon [deg].
     ϕₑ = 5.13sin(deg2rad( 93.3 + 483_202.03t_tdb)) +
          0.28sin(deg2rad(228.2 + 960_400.87t_tdb)) -
          0.28sin(deg2rad(318.3 +   6_003.18t_tdb)) -
@@ -261,7 +261,7 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Vallado})
     sin_ϕ, cos_ϕ = sincos(ϕₑ)
     sin_ϵ, cos_ϵ = sincos(ϵ)
 
-    # Compute the Moon vector represented in MOD (IAU-76/KF5 mean-equator,
+    # Compute the Moon vector represented in MOD (IAU-76/FK5 mean-equator,
     # mean-equinox of date).
     r_moon_mod = SVector{3}(
         r * (cos_ϕ * cos_λ),
@@ -318,7 +318,7 @@ function moon_velocity_mod(jd_tdb::Number, ::Val{:Meeus})
     # Number of Julian centuries from J2000 epoch.
     t_tdb = (jd_tdb - JD_J2000) / 36525
 
-    # Moon's mean latitude referred to the mean equinox of date [deg].
+    # Moon's mean longitude referred to the mean equinox of date [deg].
     L´ = @evalpoly(
         t_tdb,
         +218.316_447_7,
@@ -600,10 +600,10 @@ function moon_velocity_mod(jd_tdb::Number, ::Val{:Vallado})
     sin5, cos5 = sincos(deg2rad(357.5 +  35_999.05t_tdb))
     sin6, cos6 = sincos(deg2rad(186.6 + 966_404.05t_tdb))
 
-    # Ecliptic latitude of the Moon [deg].
+    # Ecliptic longitude of the Moon [deg].
     λₑ = 218.32 + 481_267.8813t_tdb + 6.29sin1 - 1.27sin2 + 0.66sin3 + 0.21sin4 - 0.19sin5 - 0.11sin6
 
-    # Ecliptic longitude of the Moon [deg].
+    # Ecliptic latitude of the Moon [deg].
     sin_α₁, cos_α₁ = sincos(deg2rad( 93.3 + 483_202.03t_tdb))
     sin_α₂, cos_α₂ = sincos(deg2rad(228.2 + 960_400.87t_tdb))
     sin_α₃, cos_α₃ = sincos(deg2rad(318.3 +   6_003.18t_tdb))
@@ -634,7 +634,7 @@ function moon_velocity_mod(jd_tdb::Number, ::Val{:Vallado})
 
     # == Moon Velocity =====================================================================
 
-    # Time derivative of ecliptic latitude [deg/cen].
+    # Time derivative of ecliptic longitude [deg/cen].
     ∂λₑ_deg = 481_267.8813 +
         6.29cos1  * deg2rad( 477_198.85) -
         1.27cos2  * deg2rad(-413_335.38) +
@@ -643,7 +643,7 @@ function moon_velocity_mod(jd_tdb::Number, ::Val{:Vallado})
         0.19cos5  * deg2rad(  35_999.05) -
         0.11cos6  * deg2rad( 966_404.05)
 
-    # Time derivative of ecliptic longitude [deg/cen].
+    # Time derivative of ecliptic latitude [deg/cen].
     ∂ϕₑ_deg =
         5.13cos_α₁ * deg2rad( 483_202.03) +
         0.28cos_α₂ * deg2rad( 960_400.87) -

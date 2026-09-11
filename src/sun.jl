@@ -56,7 +56,7 @@ function sun_position_mod(jd_tdb::Number)
     # Mean longitude of the Sun [deg].
     λ_m = 280.460 + 36_000.771t_tdb
 
-    # Ecliptic latitude of the Sun [deg].
+    # Ecliptic longitude of the Sun [deg].
     λ_e = λ_m + 1.914_666_471sin_Ms + 0.019_994_643sin_2Ms
 
     # Obliquity of the ecliptic [deg].
@@ -129,7 +129,7 @@ function sun_velocity_mod(jd_tdb::Number)
     # Mean longitude of the Sun [deg].
     λ_m = 280.460 + 36_000.771t_tdb
 
-    # Ecliptic latitude of the Sun [deg].
+    # Ecliptic longitude of the Sun [deg].
     λ_e = λ_m + 1.914_666_471sin_Ms + 0.019_994_643sin_2Ms
 
     # Obliquity of the ecliptic [deg].
