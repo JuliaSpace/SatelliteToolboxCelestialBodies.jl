@@ -64,3 +64,25 @@ end
         @test norm(v - v_n) / norm(v) * 100 < 0.001
     end
 end
+
+# -- Function sun_state_mod ----------------------------------------------------------------
+
+############################################################################################
+#                                       Test Results                                       #
+############################################################################################
+#
+# The state returned by `sun_state_mod` must match the position and velocity computed by
+# `sun_position_mod` and `sun_velocity_mod`, which are already validated.
+#
+############################################################################################
+
+@testset "Sun State" begin
+    jd_tdb   = date_to_jd(2006, 4, 2, 0, 0, 0)
+    date_tdb = jd_tdb |> julian2datetime
+
+    s_mod, ṡ_mod = sun_state_mod(jd_tdb)
+
+    @test s_mod == sun_position_mod(jd_tdb)
+    @test ṡ_mod == sun_velocity_mod(jd_tdb)
+    @test sun_state_mod(date_tdb) == (s_mod, ṡ_mod)
+end

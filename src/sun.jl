@@ -15,7 +15,7 @@
 #
 ############################################################################################
 
-export sun_position_mod, sun_velocity_mod
+export sun_position_mod, sun_velocity_mod, sun_state_mod
 
 """
     sun_position_mod(jd_tdb::Number) -> SVector{3, Float64}
@@ -38,7 +38,7 @@ sun_position_mod(date_tdb::DateTime) = sun_position_mod(datetime2julian(date_tdb
 
 # NOTE: Computing the velocity together with the position costs only a handful of
 # floating-point operations. Hence, we do not keep a separate position-only kernel.
-sun_position_mod(jd_tdb::Number) = _sun_state_mod(jd_tdb)[1]
+sun_position_mod(jd_tdb::Number) = sun_state_mod(jd_tdb)[1]
 
 """
     sun_velocity_mod(jd_tdb::Number) -> SVector{3, Float64}
@@ -59,32 +59,47 @@ the time derivative of the Sun position in [1, p. 277-279].
     Microcosm Press, Hawthorne, CA.
 """
 sun_velocity_mod(date_tdb::DateTime) = sun_velocity_mod(datetime2julian(date_tdb))
-sun_velocity_mod(jd_tdb::Number) = _sun_state_mod(jd_tdb)[2]
-
-############################################################################################
-#                                    Private Functions                                     #
-############################################################################################
+sun_velocity_mod(jd_tdb::Number) = sun_state_mod(jd_tdb)[2]
 
 """
-    _sun_state_mod(jd_tdb::Number) -> SVector{3, Float64}, SVector{3, Float64}
+    sun_state_mod(jd_tdb::Number) -> SVector{3, T}, SVector{3, T}
+    sun_state_mod(date_tdb::DateTime) -> SVector{3, Float64}, SVector{3, Float64}
 
 Compute the Sun position [m] and velocity [m/s] represented in the IAU-76/FK5 MOD
-(mean-equator, mean-equinox of date) at the Julian Day `jd_tdb` [TDB].
+(mean-equator, mean-equinox of date) at the Julian Day `jd_tdb` or at the date `date_tdb`,
+both in the Barycentric Dynamical Time (TDB).
 
-The position follows the algorithm in **[1, pp. 277-279]**. The velocity is its analytical
-time derivative.
+The position follows the algorithm in **[1, pp. 277-279]** and the velocity is its
+analytical time derivative. Prefer this function over calling [`sun_position_mod`](@ref)
+and [`sun_velocity_mod`](@ref) separately when both quantities are required, since the
+computation is shared.
+
+See also: [`sun_position_mod`](@ref), [`sun_velocity_mod`](@ref)
 
 # Returns
 
-- `SVector{3, Float64}`: Sun position vector [m] represented in MOD.
-- `SVector{3, Float64}`: Sun velocity vector [m/s] represented in MOD.
+- `SVector{3, T}`: Sun position vector [m] represented in MOD.
+- `SVector{3, T}`: Sun velocity vector [m/s] represented in MOD.
 
 # References
 
 - **[1]** Vallado, D. A. (2013). *Fundamentals of Astrodynamics and Applications*. 4th ed.
     Microcosm Press, Hawthorne, CA.
+
+# Extended help
+
+The element type `T` of the result is `promote_type(float(typeof(jd_tdb)), Float64)`.
+Hence, `Float32` inputs yield `Float64` results because the precision of the series
+requires it, whereas wider types, such as `BigFloat` or automatic differentiation numbers,
+propagate to the output.
+
+The algorithm uses the number of Julian centuries in TDB for all fundamental arguments,
+including the mean longitude of the Sun, which is defined in UT1 in **[1]**. The resulting
+error is below 1'' and negligible for the accuracy of this model.
 """
-function _sun_state_mod(jd_tdb::Number)
+sun_state_mod(date_tdb::DateTime) = sun_state_mod(datetime2julian(date_tdb))
+
+function sun_state_mod(jd_tdb::Number)
     # Number of Julian centuries from the J2000 epoch [TDB].
     t_tdb = (jd_tdb - JD_J2000) / 36525
 

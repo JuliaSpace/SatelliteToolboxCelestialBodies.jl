@@ -11,7 +11,7 @@
 #
 ############################################################################################
 
-export moon_position_mod, moon_velocity_mod
+export moon_position_mod, moon_velocity_mod, moon_state_mod
 
 """
     moon_position_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
@@ -47,7 +47,7 @@ end
 
 # NOTE: Computing the velocity together with the position adds only a few operations per
 # term of the series. Hence, we do not keep a separate position-only kernel.
-moon_position_mod(jd_tdb::Number, model::Val) = _moon_state_mod(jd_tdb, model)[1]
+moon_position_mod(jd_tdb::Number, model::Val) = moon_state_mod(jd_tdb, model)[1]
 
 """
     moon_velocity_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
@@ -79,28 +79,43 @@ function moon_velocity_mod(date_tdb::DateTime, model::Val)
     return moon_velocity_mod(datetime2julian(date_tdb), model)
 end
 
-moon_velocity_mod(jd_tdb::Number, model::Val) = _moon_state_mod(jd_tdb, model)[2]
+moon_velocity_mod(jd_tdb::Number, model::Val) = moon_state_mod(jd_tdb, model)[2]
 
 ############################################################################################
-#                                    Private Functions                                     #
+#                                       Moon State                                        #
 ############################################################################################
 
 """
-    _moon_state_mod(jd_tdb::Number, ::Val{:Meeus}) -> SVector{3, Float64}, SVector{3, Float64}
-    _moon_state_mod(jd_tdb::Number, ::Val{:Vallado}) -> SVector{3, Float64}, SVector{3, Float64}
+    moon_state_mod(jd_tdb::Number[, model]) -> SVector{3, T}, SVector{3, T}
+    moon_state_mod(date_tdb::DateTime[, model]) -> SVector{3, Float64}, SVector{3, Float64}
 
 Compute the Moon position [m] and velocity [m/s] represented in the IAU-76/FK5 MOD
-(mean-equator, mean-equinox of date) at the Julian Day `jd_tdb` [TDB] using the selected
-model.
+(mean-equator, mean-equinox of date) at the Julian Day `jd_tdb` or at the date `date_tdb`,
+both in the Barycentric Dynamical Time (TDB).
 
-`Val(:Meeus)` follows the algorithm in **[2, ch. 47]**, whereas `Val(:Vallado)` follows the
-algorithm in **[1, p. 288]**. In both cases, the velocity is the analytical time derivative
-of the position.
+The `model` selects the algorithm and must be `Val(:Meeus)` or `Val(:Vallado)`.
+`Val(:Meeus)` uses the algorithm in **[2, ch. 47]** that provides an accuracy of 10 [arcsec]
+in the longitude and 4 [arcsec] in the latitude (the reference does not mention the
+timespan). `Val(:Vallado)` uses the algorithm in **[1, p. 288]** that is about 10 times
+faster than `Val(:Meeus)` but can lead to errors of 0.3 [°] in longitude and 0.2 [°] in
+latitude. In both cases, the velocity is the analytical time derivative of the position.
+Prefer this function over calling [`moon_position_mod`](@ref) and
+[`moon_velocity_mod`](@ref) separately when both quantities are required, since the
+computation is shared.
+
+See also: [`moon_position_mod`](@ref), [`moon_velocity_mod`](@ref)
+
+# Arguments
+
+- `jd_tdb::Number`: Julian Day [TDB] at which the state must be computed.
+- `date_tdb::DateTime`: Date [TDB] at which the state must be computed.
+- `model::Val`: Algorithm used to compute the Moon state.
+    (**Default**: `Val(:Meeus)`)
 
 # Returns
 
-- `SVector{3, Float64}`: Moon position vector [m] represented in MOD.
-- `SVector{3, Float64}`: Moon velocity vector [m/s] represented in MOD.
+- `SVector{3, T}`: Moon position vector [m] represented in MOD.
+- `SVector{3, T}`: Moon velocity vector [m/s] represented in MOD.
 
 # References
 
@@ -108,8 +123,22 @@ of the position.
     Microcosm Press, Hawthorne, CA.
 - **[2]** Meeus, J. (1998). *Astronomical Algorithms*. 2nd ed. Willmann-Bell, Inc,
     Richmond, VA.
+
+# Extended help
+
+The element type `T` of the result is `promote_type(float(typeof(jd_tdb)), Float64)`.
+Hence, `Float32` inputs yield `Float64` results because the precision of the series
+requires it, whereas wider types, such as `BigFloat` or automatic differentiation numbers,
+propagate to the output.
 """
-function _moon_state_mod(jd_tdb::Number, ::Val{:Meeus})
+moon_state_mod(date_tdb::DateTime) = moon_state_mod(date_tdb, Val(:Meeus))
+moon_state_mod(jd_tdb::Number) = moon_state_mod(jd_tdb, Val(:Meeus))
+
+function moon_state_mod(date_tdb::DateTime, model::Val)
+    return moon_state_mod(datetime2julian(date_tdb), model)
+end
+
+function moon_state_mod(jd_tdb::Number, ::Val{:Meeus})
     # Number of Julian centuries from the J2000 epoch [TDB].
     t_tdb = (jd_tdb - JD_J2000) / 36525
 
@@ -328,7 +357,7 @@ function _moon_state_mod(jd_tdb::Number, ::Val{:Meeus})
     return r_moon_mod, v_moon_mod
 end
 
-function _moon_state_mod(jd_tdb::Number, ::Val{:Vallado})
+function moon_state_mod(jd_tdb::Number, ::Val{:Vallado})
     # Number of Julian centuries from the J2000 epoch [TDB].
     t_tdb = (jd_tdb - JD_J2000) / 36525
 
@@ -444,6 +473,10 @@ function _moon_state_mod(jd_tdb::Number, ::Val{:Vallado})
 
     return r_moon_mod, v_moon_mod
 end
+
+############################################################################################
+#                                    Private Functions                                     #
+############################################################################################
 
 """
     _sum_table_47a(

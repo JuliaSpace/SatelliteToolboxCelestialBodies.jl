@@ -153,3 +153,30 @@ end
     @test moon_velocity_mod(date_tdb, Val(:Meeus)) == moon_velocity_mod(jd_tdb, Val(:Meeus))
     @test moon_velocity_mod(date_tdb, Val(:Vallado)) == moon_velocity_mod(jd_tdb, Val(:Vallado))
 end
+
+# -- Function moon_state_mod ---------------------------------------------------------------
+
+############################################################################################
+#                                       Test Results                                       #
+############################################################################################
+#
+# The state returned by `moon_state_mod` must match the position and velocity computed by
+# `moon_position_mod` and `moon_velocity_mod`, which are already validated.
+#
+############################################################################################
+
+@testset "Moon State" begin
+    jd_tdb   = date_to_jd(1994, 4, 28, 0, 0, 0)
+    date_tdb = jd_tdb |> julian2datetime
+
+    for model in (Val(:Meeus), Val(:Vallado))
+        r_moon_mod, v_moon_mod = moon_state_mod(jd_tdb, model)
+
+        @test r_moon_mod == moon_position_mod(jd_tdb, model)
+        @test v_moon_mod == moon_velocity_mod(jd_tdb, model)
+        @test moon_state_mod(date_tdb, model) == (r_moon_mod, v_moon_mod)
+    end
+
+    @test moon_state_mod(jd_tdb) == moon_state_mod(jd_tdb, Val(:Meeus))
+    @test moon_state_mod(date_tdb) == moon_state_mod(date_tdb, Val(:Meeus))
+end
