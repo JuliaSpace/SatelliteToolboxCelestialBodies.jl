@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/src/assets/logo.png" width="150" title="SatelliteToolboxTransformations.jl"><br>
+  <img src="./docs/src/assets/logo.png" width="150" title="SatelliteToolboxCelestialBodies.jl"><br>
   <small><i>This package is part of the <a href="https://github.com/JuliaSpace/SatelliteToolbox.jl">SatelliteToolbox.jl</a> ecosystem.</i></small>
 </p>
 
@@ -7,6 +7,8 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/JuliaSpace/SatelliteToolboxCelestialBodies.jl/ci.yml?style=flat-square&logo=githubactions&logoColor=white&labelColor=475569&label=CI)](https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/actions/workflows/ci.yml)
 [![Codecov](https://img.shields.io/codecov/c/github/JuliaSpace/SatelliteToolboxCelestialBodies.jl?token=CONQMSI4JD&style=flat-square&logo=codecov&logoColor=white&labelColor=475569)](https://codecov.io/gh/JuliaSpace/SatelliteToolboxCelestialBodies.jl)
+[![docs-stable](https://img.shields.io/badge/docs-stable-16A34A?style=flat-square&logo=gitbook&logoColor=white&labelColor=475569)][docs-stable-url]
+[![docs-dev](https://img.shields.io/badge/docs-dev-D97706?style=flat-square&logo=gitbook&logoColor=white&labelColor=475569)][docs-dev-url]
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495D1?style=flat-square&labelColor=475569)](https://github.com/invenia/BlueStyle)
 [![License](https://img.shields.io/github/license/JuliaSpace/SatelliteToolboxCelestialBodies.jl?style=flat-square&logo=readme&logoColor=white&labelColor=475569&color=0284C7)](https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/blob/main/LICENSE.txt)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.11262848-DB2777?style=flat-square&logo=doi&logoColor=white&labelColor=475569)](https://zenodo.org/doi/10.5281/zenodo.11262848)
@@ -18,113 +20,32 @@ bodies for the **SatelliteToolbox.jl** ecosystem.
 
 ```julia
 julia> using Pkg
-julia> Pkg.add("SatelliteToolboxCelestialBodies.jl")
+julia> Pkg.add("SatelliteToolboxCelestialBodies")
 ```
 
 ## Usage
 
-### Sun
-
-We can compute the Sun position represented in the Mean-Of-Date (MOD) reference frame
-**[1]** using the functions:
-
-```julia
-sun_position_mod(jd_tdb::Number) -> SVector{3, Float64}
-sun_position_mod(date_tdb::DateTime) -> SVector{3, Float64}
-```
-
-where the input time `jd_tdb` (Julian Day) or `date_tdb` must be represented in the
-[Barycentric Dynamical Time (TDB)](https://en.wikipedia.org/wiki/Barycentric_Dynamical_Time).
+The position [m] and velocity [m/s] of the Sun and Moon represented in the IAU-76/FK5
+mean-equator, mean-equinox of date (MOD) reference frame can be computed using the
+functions `sun_position_mod`, `sun_velocity_mod`, `sun_state_mod`, `moon_position_mod`,
+`moon_velocity_mod`, and `moon_state_mod`. The input epoch is a Julian Day or a `DateTime`
+in the [Barycentric Dynamical Time (TDB)](https://en.wikipedia.org/wiki/Barycentric_Dynamical_Time).
 
 ```julia
-julia> sun_position_mod(now())
+julia> sun_position_mod(now(UTC))
 3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
  7.281649894711235e10
  1.2182511371727788e11
  5.2809968734836815e10
+
+julia> r_moon_mod, v_moon_mod = moon_state_mod(now(UTC), Val(:Vallado));
 ```
 
-We can also compute the Sun velocity represented in MOD frame as measured by an observer in
-the same frame:
+> [!NOTE]
+> The difference between UTC and TDB is roughly 69 s, which is negligible for the accuracy
+> of these models.
 
-```julia
-sun_velocity_mod(jd_tdb::Number) -> SVector{3, Float64}
-sun_velocity_mod(date_tdb::DateTime) -> SVector{3, Float64}
-```
-
-where the input time `jd_tdb` (Julian Day) or `date_tdb` must be represented in the
-[Barycentric Dynamical Time (TDB)](https://en.wikipedia.org/wiki/Barycentric_Dynamical_Time).
-
-> **Note**
-> This algorithm was obtained by differentiating the Sun position equations in **[1]**.
-
-```julia
-julia> sun_velocity_mod(now())
-3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
- -25645.525387897742
-  13231.300593568181
-   5735.626095163374
-```
-
-### Moon
-
-We can compute the Moon position represented in the Mean-Of-Date (MOD) reference frame
-**[1, 2]** using the functions:
-
-``` julia
-moon_position_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
-moon_position_mod(date_tdb::DateTime[, model]) -> SVector{3, Float64}
-```
-
-where the input time `jd_tdb` (Julian Day) or `date_tdb` must be represented in the
-Barycentric Dynamical Time (TDB).
-
-The `model` must be `Val(:Meeus)` or `Val(:Vallado)`. `Val(:Meeus)` uses the algorithm in
-**[2, p. 337]** that provides an accuracy of 10" in the longitude and 4" in the latitude
-(the reference does not mention the timespan). `Val(:Vallado)` uses the algorithm in
-**[1, p. 288]** that is 10x faster than `Val(:Meeus)` but can lead to errors of 0.3° in
-longitude and 0.2° in latitude.
-
-```julia
-julia> moon_position_mod(now())
-3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
- -4.992612797700085e7
-  3.48593091076279e8
-  1.864034978650991e8
-
-julia> moon_position_mod(now(), Val(:Vallado))
-3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
- -4.991011671868989e7
-  3.481318482554912e8
-  1.8647115876567587e8
-```
-
-We can also compute the Moon velocity represented in MOD frame as measured by an observer in
-the same frame:
-
-```julia
-moon_velocity_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
-moon_velocity_mod(date_tdb::DateTime[, model]) -> SVector{3, Float64}
-```
-
-where the input time and `model` arguments are the same as for `moon_position_mod`.
-
-> **Note**
-> This algorithm was obtained by differentiating the Moon position equations in **[1, 2]**.
-
-```julia
-julia> moon_velocity_mod(now())
-3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
- -897.5428622498892
- -103.71757584498875
-  -35.86412227498765
-
-julia> moon_velocity_mod(now(), Val(:Vallado))
-3-element StaticArraysCore.SVector{3, Float64} with indices SOneTo(3):
- -897.1062248189247
- -103.83122252784882
-  -35.23414818498116
-```
+See the [package documentation][docs-stable-url] for more details.
 
 ## Rationale
 
@@ -136,7 +57,10 @@ since the extensive feature list in the other packages is unnecessary here.
 
 ## References
 
-- **[1]** **Vallado, D. A** (2013). *Fundamentals of Astrodynamics and Applications*. 4th
-  ed. **Microcosm Press**, Hawthorn, CA, USA.
-- **[2]** **Meeus, J** (1998). *Astronomical algorithms*. **Willmann-Bell, Inc**, Richmond,
-  VA.
+- **[1]** **Vallado, D. A.** (2013). *Fundamentals of Astrodynamics and Applications*. 4th
+  ed. **Microcosm Press**, Hawthorne, CA.
+- **[2]** **Meeus, J.** (1998). *Astronomical Algorithms*. 2nd ed. **Willmann-Bell, Inc**,
+  Richmond, VA.
+
+[docs-dev-url]: https://juliaspace.github.io/SatelliteToolboxCelestialBodies.jl/dev
+[docs-stable-url]: https://juliaspace.github.io/SatelliteToolboxCelestialBodies.jl/stable
