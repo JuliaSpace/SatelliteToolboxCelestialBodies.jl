@@ -106,16 +106,17 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Meeus})
     A₂ = @evalpoly(t_tdb,  53.09, 479_264.290)
     A₃ = @evalpoly(t_tdb, 313.45, 481_266.484)
 
-    # Convert everything to [rad] and limit the angles between [0, 2π].
-    L´ = mod2pi(deg2rad(L´))
-    D  = mod2pi(deg2rad(D))
-    M  = mod2pi(deg2rad(M))
-    M´ = mod2pi(deg2rad(M´))
-    F  = mod2pi(deg2rad(F))
-    ϵ  = mod2pi(deg2rad(ϵ))
-    A₁ = mod2pi(deg2rad(A₁))
-    A₂ = mod2pi(deg2rad(A₂))
-    A₃ = mod2pi(deg2rad(A₃))
+    # Convert everything to [rad]. The angles are not wrapped to [0, 2π] because they are only used as
+    # arguments of `sincos`, which performs its own range reduction.
+    L´ = deg2rad(L´)
+    D  = deg2rad(D)
+    M  = deg2rad(M)
+    M´ = deg2rad(M´)
+    F  = deg2rad(F)
+    ϵ  = deg2rad(ϵ)
+    A₁ = deg2rad(A₁)
+    A₂ = deg2rad(A₂)
+    A₃ = deg2rad(A₃)
 
     # Term used to correct the arguments of the angle M that depends on the Earth's orbit
     # eccentricity around the Sun.
@@ -139,7 +140,7 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Meeus})
         aM´ = tab[3, k]
         aF  = tab[4, k]
 
-        arg = mod2pi(aD * D + aM * M + aM´ * M´ + aF * F)
+        arg = aD * D + aM * M + aM´ * M´ + aF * F
 
         # Check if we need to apply the correction `E`.
         E_corr = if ((aM == 1) || (aM == -1))
@@ -171,7 +172,7 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Meeus})
         aM´ = tab[3, k]
         aF  = tab[4, k]
 
-        arg = mod2pi(aD * D + aM * M + aM´ * M´ + aF * F)
+        arg = aD * D + aM * M + aM´ * M´ + aF * F
 
         # Check if we need to apply the correction `E`.
         E_corr = if ((aM == 1) || (aM == -1))
@@ -190,11 +191,11 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Meeus})
     Σb += -2235sin(L´) + 382sin(A₃) + 175sin(A₁ - F) + 175sin(A₁ + F) + 127sin(L´ - M´) - 115sin(L´ + M´)
 
     # Convert to [rad].
-    Σl = mod2pi(deg2rad(Σl / 1_000_000))
-    Σb = mod2pi(deg2rad(Σb / 1_000_000))
+    Σl = deg2rad(Σl / 1_000_000)
+    Σb = deg2rad(Σb / 1_000_000)
 
     # Compute the Moon coordinates [rad] and [m].
-    λ = mod2pi(L´ + Σl)
+    λ = L´ + Σl
     β = Σb
     Δ = 385_000.56e3 + Σr
 
@@ -247,11 +248,12 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Vallado})
     # Obliquity of the ecliptic [deg].
     ϵ = @evalpoly(t_tdb, 23.439_291, -0.013_004_2, -1.64e-7, +5.04e-7)
 
-    # Convert to radians and limit to the interval [0,2π].
-    λₑ = mod2pi(deg2rad(λₑ))
-    ϕₑ = mod2pi(deg2rad(ϕₑ))
-    P  = mod2pi(deg2rad(P))
-    ϵ  = mod2pi(deg2rad(ϵ))
+    # Convert to [rad]. The angles are not wrapped to [0, 2π] because they are only used as
+    # arguments of `sincos`, which performs its own range reduction.
+    λₑ = deg2rad(λₑ)
+    ϕₑ = deg2rad(ϕₑ)
+    P  = deg2rad(P)
+    ϵ  = deg2rad(ϵ)
 
     # Compute the distance from Earth to the Moon [m].
     r = WGS84_ELLIPSOID.a / sin(P)
@@ -417,16 +419,17 @@ function moon_velocity_mod(jd_tdb::Number, ::Val{:Meeus})
 
     ∂ϵ_deg = @evalpoly(t_tdb, -0.013_004_2, 2 * (-1.64e-7), 3 * (+5.04e-7))
 
-    # Convert angles to [rad] and limit the angles between [0, 2π].
-    L´ = mod2pi(deg2rad(L´))
-    D  = mod2pi(deg2rad(D))
-    M  = mod2pi(deg2rad(M))
-    M´ = mod2pi(deg2rad(M´))
-    F  = mod2pi(deg2rad(F))
-    ϵ  = mod2pi(deg2rad(ϵ))
-    A₁ = mod2pi(deg2rad(A₁))
-    A₂ = mod2pi(deg2rad(A₂))
-    A₃ = mod2pi(deg2rad(A₃))
+    # Convert angles to [rad]. The angles are not wrapped to [0, 2π] because they are only used as
+    # arguments of `sincos`, which performs its own range reduction.
+    L´ = deg2rad(L´)
+    D  = deg2rad(D)
+    M  = deg2rad(M)
+    M´ = deg2rad(M´)
+    F  = deg2rad(F)
+    ϵ  = deg2rad(ϵ)
+    A₁ = deg2rad(A₁)
+    A₂ = deg2rad(A₂)
+    A₃ = deg2rad(A₃)
 
     # Convert angular rates to [rad/cen].
     ∂L´ = deg2rad(∂L´_deg)
@@ -457,7 +460,7 @@ function moon_velocity_mod(jd_tdb::Number, ::Val{:Meeus})
         aM´ = tab[3, k]
         aF  = tab[4, k]
 
-        arg  = mod2pi(aD * D + aM * M + aM´ * M´ + aF * F)
+        arg  = aD * D + aM * M + aM´ * M´ + aF * F
         ∂arg = aD * ∂D + aM * ∂M + aM´ * ∂M´ + aF * ∂F
 
         E_corr, ∂E_corr = if ((aM == 1) || (aM == -1))
@@ -489,7 +492,7 @@ function moon_velocity_mod(jd_tdb::Number, ::Val{:Meeus})
         aM´ = tab[3, k]
         aF  = tab[4, k]
 
-        arg  = mod2pi(aD * D + aM * M + aM´ * M´ + aF * F)
+        arg  = aD * D + aM * M + aM´ * M´ + aF * F
         ∂arg = aD * ∂D + aM * ∂M + aM´ * ∂M´ + aF * ∂F
 
         E_corr, ∂E_corr = if ((aM == 1) || (aM == -1))
@@ -538,11 +541,11 @@ function moon_velocity_mod(jd_tdb::Number, ::Val{:Meeus})
             115cos_L´_pM´ * (∂L´ + ∂M´)
 
     # Convert to [rad].
-    Σl = mod2pi(deg2rad(Σl / 1_000_000))
-    Σb = mod2pi(deg2rad(Σb / 1_000_000))
+    Σl = deg2rad(Σl / 1_000_000)
+    Σb = deg2rad(Σb / 1_000_000)
 
     # Compute the Moon coordinates [rad] and [m].
-    λ = mod2pi(L´ + Σl)
+    λ = L´ + Σl
     β = Σb
     Δ = 385_000.56e3 + Σr
 
@@ -617,11 +620,12 @@ function moon_velocity_mod(jd_tdb::Number, ::Val{:Vallado})
     # Obliquity of the ecliptic [deg].
     ϵ = @evalpoly(t_tdb, 23.439_291, -0.013_004_2, -1.64e-7, +5.04e-7)
 
-    # Convert to radians and limit to the interval [0, 2π].
-    λₑ = mod2pi(deg2rad(λₑ))
-    ϕₑ = mod2pi(deg2rad(ϕₑ))
-    P  = mod2pi(deg2rad(P))
-    ϵ  = mod2pi(deg2rad(ϵ))
+    # Convert to [rad]. The angles are not wrapped to [0, 2π] because they are only used as
+    # arguments of `sincos`, which performs its own range reduction.
+    λₑ = deg2rad(λₑ)
+    ϕₑ = deg2rad(ϕₑ)
+    P  = deg2rad(P)
+    ϵ  = deg2rad(ϵ)
 
     # Compute the distance from Earth to the Moon [m].
     sin_P, cos_P = sincos(P)

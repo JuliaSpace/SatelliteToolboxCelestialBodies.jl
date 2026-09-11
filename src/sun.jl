@@ -43,8 +43,9 @@ function sun_position_mod(jd_tdb::Number)
     # Mean anomaly of the Sun [deg].
     Ms = 357.529_109_2 + 35_999.050_34t_tdb
 
-    # Convert Ms to [rad] and limit to the interval [0,2π].
-    Ms = mod2pi(deg2rad(Ms))
+    # Convert Ms to [rad]. The angles are not wrapped to [0, 2π] because they are only used as
+    # arguments of `sincos`, which performs its own range reduction.
+    Ms = deg2rad(Ms)
 
     # Compute auxiliary variables.
     sin_Ms,  cos_Ms  = sincos(Ms)
@@ -62,9 +63,9 @@ function sun_position_mod(jd_tdb::Number)
     # Obliquity of the ecliptic [deg].
     ϵ = 23.439_291 - 0.013_004_2t_tdb
 
-    # Convert λ_e and ϵ to [rad] and limit to the interval [0,2π].
-    λ_e = mod2pi(deg2rad(λ_e))
-    ϵ   = mod2pi(deg2rad(ϵ))
+    # Convert λ_e and ϵ to [rad].
+    λ_e = deg2rad(λ_e)
+    ϵ   = deg2rad(ϵ)
 
     # Auxiliary variables.
     sin_ϵ   , cos_ϵ   = sincos(ϵ)
@@ -116,8 +117,9 @@ function sun_velocity_mod(jd_tdb::Number)
     # Mean anomaly of the Sun [deg].
     Ms = 357.529_109_2 + 35_999.050_34t_tdb
 
-    # Convert Ms to [rad] and limit to the interval [0,2π].
-    Ms = mod2pi(deg2rad(Ms))
+    # Convert Ms to [rad]. The angles are not wrapped to [0, 2π] because they are only used as
+    # arguments of `sincos`, which performs its own range reduction.
+    Ms = deg2rad(Ms)
 
     # Compute auxiliary variables.
     sin_Ms,  cos_Ms  = sincos(Ms)
@@ -135,9 +137,9 @@ function sun_velocity_mod(jd_tdb::Number)
     # Obliquity of the ecliptic [deg].
     ϵ = 23.439_291 - 0.013_004_2t_tdb
 
-    # Convert λ_e and ϵ to [rad] and limit to the interval [0,2π].
-    λ_e = mod2pi(deg2rad(λ_e))
-    ϵ   = mod2pi(deg2rad(ϵ))
+    # Convert λ_e and ϵ to [rad].
+    λ_e = deg2rad(λ_e)
+    ϵ   = deg2rad(ϵ)
 
     # Auxiliary variables.
     sin_ϵ   , cos_ϵ   = sincos(ϵ)
