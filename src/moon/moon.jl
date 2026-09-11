@@ -4,41 +4,56 @@
 #
 ## References ##############################################################################
 #
-# [1] Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
+# [1] Vallado, D. A. (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
 #     Microcosm Press, Hawthorne, CA.
 #
-# [2] Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
+# [2] Meeus, J. (1998). Astronomical Algorithms. 2nd ed. Willmann-Bell, Inc, Richmond, VA.
 #
 ############################################################################################
 
 export moon_position_mod, moon_velocity_mod, moon_state_mod
 
+############################################################################################
+#                                      Moon Position                                       #
+############################################################################################
+
 """
-    moon_position_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
+    moon_position_mod(jd_tdb::Number[, model]) -> SVector{3, T}
     moon_position_mod(date_tdb::Union{Date, DateTime}[, model]) -> SVector{3, Float64}
 
-Compute the Moon position represented in the IAU-76/FK5 MOD (mean-equator, mean-equinox of
-date) at the Julian Day `jd_tdb` or `date_tdb`. The input time must be represented in the
+Compute the Moon position [m] represented in the IAU-76/FK5 MOD (mean-equator,
+mean-equinox of date) at the Julian Day `jd_tdb` or at the date `date_tdb`, both in the
 Barycentric Dynamical Time (TDB).
 
-The `model` must be `Val(:Meeus)` or `Val(:Vallado)`. `Val(:Meeus)` uses the algorithm in
-**[2, p. 337]** that provides an accuracy of 10" in the longitude and 4" in the latitude
-(the reference does not mention the timespan). `Val(:Vallado)` uses the algorithm in
-**[1, p. 288]** that is 10x faster than `Val(:Meeus)` but can lead to errors of 0.3° in
-longitude and 0.2° in latitude.
+The `model` selects the algorithm and must be `Val(:Meeus)` **[2, ch. 47]** or
+`Val(:Vallado)` **[1, p. 288]**. See [`moon_state_mod`](@ref) for the details on the
+accuracy of each model and on the element type `T` of the result. The function throws an
+error if `model` is not one of the supported models.
 
-!!! note
+See also: [`moon_state_mod`](@ref), [`moon_velocity_mod`](@ref)
 
-    This function performs all the computations using `Float64` due to the necessary
-    precision.
+# Arguments
+
+- `jd_tdb::Number`: Julian Day [TDB] at which the position must be computed.
+- `date_tdb::Union{Date, DateTime}`: Date [TDB] at which the position must be computed.
+- `model::Val`: Algorithm used to compute the Moon position.
+    (**Default**: `Val(:Meeus)`)
+
+# Returns
+
+- `SVector{3, T}`: Moon position vector [m] represented in MOD.
 
 # References
 
-- **[1]** Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
+- **[1]** Vallado, D. A. (2013). *Fundamentals of Astrodynamics and Applications*. 4th ed.
     Microcosm Press, Hawthorne, CA.
-- **[2]** Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
+- **[2]** Meeus, J. (1998). *Astronomical Algorithms*. 2nd ed. Willmann-Bell, Inc,
+    Richmond, VA.
 """
-moon_position_mod(date_tdb::Union{Date, DateTime}) = moon_position_mod(date_tdb, Val(:Meeus))
+function moon_position_mod(date_tdb::Union{Date, DateTime})
+    return moon_position_mod(date_tdb, Val(:Meeus))
+end
+
 moon_position_mod(jd_tdb::Number) = moon_position_mod(jd_tdb, Val(:Meeus))
 
 function moon_position_mod(date_tdb::Union{Date, DateTime}, model::Val)
@@ -49,30 +64,48 @@ end
 # term of the series. Hence, we do not keep a separate position-only kernel.
 moon_position_mod(jd_tdb::Number, model::Val) = moon_state_mod(jd_tdb, model)[1]
 
+############################################################################################
+#                                      Moon Velocity                                       #
+############################################################################################
+
 """
-    moon_velocity_mod(jd_tdb::Number[, model]) -> SVector{3, Float64}
+    moon_velocity_mod(jd_tdb::Number[, model]) -> SVector{3, T}
     moon_velocity_mod(date_tdb::Union{Date, DateTime}[, model]) -> SVector{3, Float64}
 
-Compute the Moon velocity measured and represented in the IAU-76/FK5 MOD (mean-equator,
-mean-equinox of date) at the Julian Day `jd_tdb` or `date_tdb`. The input time must be
-represented in the Barycentric Dynamical Time (TDB). The algorithm was obtained by computing
-the time derivative of the Moon position.
+Compute the Moon velocity [m/s] measured and represented in the IAU-76/FK5 MOD
+(mean-equator, mean-equinox of date) at the Julian Day `jd_tdb` or at the date `date_tdb`,
+both in the Barycentric Dynamical Time (TDB).
 
-The `model` must be `Val(:Meeus)` or `Val(:Vallado)`. See [`moon_position_mod`](@ref) for
-details on the accuracy of each model.
+The `model` selects the algorithm and must be `Val(:Meeus)` **[2, ch. 47]** or
+`Val(:Vallado)` **[1, p. 288]**. In both cases, the velocity is the analytical time
+derivative of the Moon position. See [`moon_state_mod`](@ref) for the details on the
+accuracy of each model and on the element type `T` of the result. The function throws an
+error if `model` is not one of the supported models.
 
-!!! note
+See also: [`moon_state_mod`](@ref), [`moon_position_mod`](@ref)
 
-    This function performs all the computations using `Float64` due to the necessary
-    precision.
+# Arguments
+
+- `jd_tdb::Number`: Julian Day [TDB] at which the velocity must be computed.
+- `date_tdb::Union{Date, DateTime}`: Date [TDB] at which the velocity must be computed.
+- `model::Val`: Algorithm used to compute the Moon velocity.
+    (**Default**: `Val(:Meeus)`)
+
+# Returns
+
+- `SVector{3, T}`: Moon velocity vector [m/s] represented in MOD.
 
 # References
 
-- **[1]** Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
+- **[1]** Vallado, D. A. (2013). *Fundamentals of Astrodynamics and Applications*. 4th ed.
     Microcosm Press, Hawthorne, CA.
-- **[2]** Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
+- **[2]** Meeus, J. (1998). *Astronomical Algorithms*. 2nd ed. Willmann-Bell, Inc,
+    Richmond, VA.
 """
-moon_velocity_mod(date_tdb::Union{Date, DateTime}) = moon_velocity_mod(date_tdb, Val(:Meeus))
+function moon_velocity_mod(date_tdb::Union{Date, DateTime})
+    return moon_velocity_mod(date_tdb, Val(:Meeus))
+end
+
 moon_velocity_mod(jd_tdb::Number) = moon_velocity_mod(jd_tdb, Val(:Meeus))
 
 function moon_velocity_mod(date_tdb::Union{Date, DateTime}, model::Val)
@@ -87,7 +120,9 @@ moon_velocity_mod(jd_tdb::Number, model::Val) = moon_state_mod(jd_tdb, model)[2]
 
 """
     moon_state_mod(jd_tdb::Number[, model]) -> SVector{3, T}, SVector{3, T}
-    moon_state_mod(date_tdb::Union{Date, DateTime}[, model]) -> SVector{3, Float64}, SVector{3, Float64}
+    moon_state_mod(
+        date_tdb::Union{Date, DateTime}[, model]
+    ) -> SVector{3, Float64}, SVector{3, Float64}
 
 Compute the Moon position [m] and velocity [m/s] represented in the IAU-76/FK5 MOD
 (mean-equator, mean-equinox of date) at the Julian Day `jd_tdb` or at the date `date_tdb`,
@@ -137,7 +172,10 @@ propagate to the output.
 
 - `ArgumentError`: `model` is neither `Val(:Meeus)` nor `Val(:Vallado)`.
 """
-moon_state_mod(date_tdb::Union{Date, DateTime}) = moon_state_mod(date_tdb, Val(:Meeus))
+function moon_state_mod(date_tdb::Union{Date, DateTime})
+    return moon_state_mod(date_tdb, Val(:Meeus))
+end
+
 moon_state_mod(jd_tdb::Number) = moon_state_mod(jd_tdb, Val(:Meeus))
 
 function moon_state_mod(date_tdb::Union{Date, DateTime}, model::Val)
