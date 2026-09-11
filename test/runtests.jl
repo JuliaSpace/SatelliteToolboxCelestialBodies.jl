@@ -1,3 +1,9 @@
+## Description #############################################################################
+#
+# Run the test suite of SatelliteToolboxCelestialBodies.jl.
+#
+############################################################################################
+
 using Test
 
 using LinearAlgebra

@@ -1,3 +1,9 @@
+"""
+    module SatelliteToolboxCelestialBodies
+
+Compute the position and velocity of celestial bodies (Sun and Moon) for the
+**SatelliteToolbox.jl** ecosystem.
+"""
 module SatelliteToolboxCelestialBodies
 
 using Reexport
