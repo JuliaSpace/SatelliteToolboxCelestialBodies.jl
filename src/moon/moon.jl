@@ -119,7 +119,7 @@ function moon_position_mod(jd_tdb::Number, ::Val{:Meeus})
 
     # Term used to correct the arguments of the angle M that depends on the Earth's orbit
     # eccentricity around the Sun.
-    E  = @evalpoly(t_tdb, 1, -0.002516, 0.0000074)
+    E  = @evalpoly(t_tdb, 1, -0.002_516, -0.000_007_4)
     E² = E * E
 
     # Compute the sum of the terms in the tables 47.A and 47.B [2].
@@ -437,9 +437,9 @@ function moon_velocity_mod(jd_tdb::Number, ::Val{:Meeus})
 
     # Term used to correct the arguments of the angle M that depends on the Earth's orbit
     # eccentricity around the Sun, and its time derivative.
-    E  = @evalpoly(t_tdb, 1, -0.002_516, 0.000_007_4)
+    E  = @evalpoly(t_tdb, 1, -0.002_516, -0.000_007_4)
     E² = E * E
-    ∂E = @evalpoly(t_tdb, -0.002_516, 2 * 0.000_007_4)
+    ∂E = @evalpoly(t_tdb, -0.002_516, 2 * (-0.000_007_4))
 
     # Compute the sum of the terms in the tables 47.A and 47.B and their time derivatives.
 
