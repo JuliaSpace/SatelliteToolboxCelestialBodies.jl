@@ -1,13 +1,45 @@
 SatelliteToolboxCelestialBodies.jl Changelog
 ============================================
 
+Version 1.1.0
+-------------
+
+- ![Feature][badge-feature] The functions `moon_velocity_mod` (PR [#8][gh-pr-8]),
+  `sun_state_mod`, and `moon_state_mod` were added. The latter two return the position and
+  velocity at once, sharing the computation.
+- ![Feature][badge-feature] All functions now accept a `Date` as the input epoch.
+- ![Feature][badge-feature] The Moon functions now throw an `ArgumentError` with a helpful
+  message if the selected model is not supported.
+- ![Enhancement][badge-enhancement] The algorithms are now generic in the numeric type of
+  the input, propagating types such as `BigFloat` and automatic differentiation numbers.
+  `Float32` inputs are promoted to `Float64`.
+- ![Enhancement][badge-enhancement] The Meeus tables are now stored as tuples of static
+  vectors and the sums over their terms are unrolled at compile time, improving the
+  performance of the Meeus model by roughly 25 % for the position and 40 % for the
+  velocity.
+- ![Enhancement][badge-enhancement] The duplicated code between the position and velocity
+  functions was removed.
+- ![Enhancement][badge-enhancement] The package now has a documentation site and a
+  precompilation workload.
+- ![Enhancement][badge-enhancement] The docstrings were rewritten to document units,
+  reference frames, time scales, and the element type of the results.
+- ![Bugfix][badge-bugfix] The time derivative of the Sun distance used `cos(2Ms)` instead of
+  `sin(2Ms)`, leading to errors of up to 8 m/s in the Sun velocity.
+- ![Bugfix][badge-bugfix] The sign of the T² term in the eccentricity correction factor `E`
+  of the Meeus model was wrong. The error is negligible near J2000 but grows quadratically
+  with time.
+- ![Info][badge-info] The test suite now checks the code quality with Aqua.jl and JET.jl,
+  the type inference and allocations of all public methods, and compares the analytical
+  velocities with derivatives obtained with ForwardDiff.jl.
+- ![Info][badge-info] The package is compatible with SatelliteToolboxBase.jl 1 and 2.
+
 Version 1.0.1
 -------------
 
 - ![Enhancement][badge-enhancement] The package now supports Zygote 0.7. (PR [#4][gh-pr-4])
 
-Verion 1.0.0
-------------
+Version 1.0.0
+-------------
 
 - ![Info][badge-info] We dropped support for Julia 1.6. This version only supports the
   current Julia version and v1.10 (LTS).
@@ -38,3 +70,4 @@ Version 0.1.0
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
 [gh-pr-4]: https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/pull/4
+[gh-pr-8]: https://github.com/JuliaSpace/SatelliteToolboxCelestialBodies.jl/pull/8
