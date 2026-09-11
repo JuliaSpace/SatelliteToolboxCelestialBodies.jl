@@ -114,15 +114,18 @@ end
     jd_start = date_to_jd(1950, 1, 1, 0, 0, 0)
     jd_stop  = date_to_jd(2019, 1, 1, 0, 0, 0)
 
+    # We use a central difference with a step of 10 s. Smaller steps are dominated by the
+    # rounding error of the Julian day representation. The epochs are sampled with a
+    # fractional part of the day to exercise the entire argument space.
     for _ in 1:100
-        jd_tdb = rand(jd_start:jd_stop)
-        Δt     = 0.1
-        r_t₁   = moon_position_mod(jd_tdb |> julian2datetime)
-        r_t₂   = moon_position_mod(jd_tdb + Δt / 86400 |> julian2datetime)
-        v_n    = (r_t₂ - r_t₁) / Δt
-        v      = moon_velocity_mod(jd_tdb |> julian2datetime)
+        jd_tdb = jd_start + rand() * (jd_stop - jd_start)
+        Δt     = 10.0
+        r_t₁   = moon_position_mod(jd_tdb - Δt / 86400)
+        r_t₂   = moon_position_mod(jd_tdb + Δt / 86400)
+        v_n    = (r_t₂ - r_t₁) / (2Δt)
+        v      = moon_velocity_mod(jd_tdb)
 
-        @test norm(v - v_n) / norm(v) * 100 < 0.055
+        @test norm(v - v_n) / norm(v) * 100 < 0.001
     end
 end
 
@@ -130,15 +133,18 @@ end
     jd_start = date_to_jd(1950, 1, 1, 0, 0, 0)
     jd_stop  = date_to_jd(2019, 1, 1, 0, 0, 0)
 
+    # We use a central difference with a step of 10 s. Smaller steps are dominated by the
+    # rounding error of the Julian day representation. The epochs are sampled with a
+    # fractional part of the day to exercise the entire argument space.
     for _ in 1:100
-        jd_tdb = rand(jd_start:jd_stop)
-        Δt     = 0.1
-        r_t₁   = moon_position_mod(jd_tdb |> julian2datetime, Val(:Vallado))
-        r_t₂   = moon_position_mod(jd_tdb + Δt / 86400 |> julian2datetime, Val(:Vallado))
-        v_n    = (r_t₂ - r_t₁) / Δt
-        v      = moon_velocity_mod(jd_tdb |> julian2datetime, Val(:Vallado))
+        jd_tdb = jd_start + rand() * (jd_stop - jd_start)
+        Δt     = 10.0
+        r_t₁   = moon_position_mod(jd_tdb - Δt / 86400, Val(:Vallado))
+        r_t₂   = moon_position_mod(jd_tdb + Δt / 86400, Val(:Vallado))
+        v_n    = (r_t₂ - r_t₁) / (2Δt)
+        v      = moon_velocity_mod(jd_tdb, Val(:Vallado))
 
-        @test norm(v - v_n) / norm(v) * 100 < 0.055
+        @test norm(v - v_n) / norm(v) * 100 < 0.001
     end
 end
 

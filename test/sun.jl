@@ -28,11 +28,17 @@
 ############################################################################################
 
 @testset "Sun Position" begin
-    s_mod = sun_position_mod(DateTime("2006-04-02T00:00:00")) / ASTRONOMICAL_UNIT
+    jd_tdb   = date_to_jd(2006, 4, 2, 0, 0, 0)
+    date_tdb = DateTime("2006-04-02T00:00:00")
+
+    s_mod = sun_position_mod(jd_tdb) / ASTRONOMICAL_UNIT
 
     @test s_mod[1] ≈ 0.9771945 atol = 2e-6
     @test s_mod[2] ≈ 0.1924424 atol = 2e-6
     @test s_mod[3] ≈ 0.0834308 atol = 2e-6
+
+    # The overloads must yield the same result.
+    @test sun_position_mod(date_tdb) == sun_position_mod(jd_tdb)
 end
 
 # -- Function sun_velocity_mod -------------------------------------------------------------
@@ -52,17 +58,22 @@ end
     jd_stop  = date_to_jd(2019, 1, 1, 0, 0, 0)
 
     # We use a central difference with a step of 10 s. Smaller steps are dominated by the
-    # rounding error of the Julian day representation.
+    # rounding error of the Julian day representation. The epochs are sampled with a
+    # fractional part of the day to exercise the entire argument space.
     for _ in 1:100
-        jd_tdb = rand(jd_start:jd_stop)
+        jd_tdb = jd_start + rand() * (jd_stop - jd_start)
         Δt     = 10.0
-        s_t₁   = sun_position_mod(jd_tdb - Δt / 86400 |> julian2datetime)
-        s_t₂   = sun_position_mod(jd_tdb + Δt / 86400 |> julian2datetime)
+        s_t₁   = sun_position_mod(jd_tdb - Δt / 86400)
+        s_t₂   = sun_position_mod(jd_tdb + Δt / 86400)
         v_n    = (s_t₂ - s_t₁) / (2Δt)
-        v      = sun_velocity_mod(jd_tdb |> julian2datetime)
+        v      = sun_velocity_mod(jd_tdb)
 
         @test norm(v - v_n) / norm(v) * 100 < 0.001
     end
+
+    # The overloads must yield the same result.
+    jd_tdb = date_to_jd(2006, 4, 2, 0, 0, 0)
+    @test sun_velocity_mod(DateTime("2006-04-02T00:00:00")) == sun_velocity_mod(jd_tdb)
 end
 
 # -- Function sun_state_mod ----------------------------------------------------------------
