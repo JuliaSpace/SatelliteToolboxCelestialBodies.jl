@@ -239,79 +239,14 @@ function _moon_state_mod(jd_tdb::Number, ::Val{:Meeus})
     # Term used to correct the arguments that depend on the Sun's mean anomaly `M` due to
     # the decrease of the Earth's orbit eccentricity, and its time derivative [1/century].
     E  = @evalpoly(t_tdb, 1, -0.002_516, -0.000_007_4)
-    E² = E * E
     ∂E = @evalpoly(t_tdb, -0.002_516, 2 * (-0.000_007_4))
 
     # == Periodic Terms ====================================================================
 
-    # Sum the periodic terms in the table 47.A [2] for the longitude and distance of the
-    # Moon, together with their time derivatives.
-    tab = _TAB_47A
-    num_terms = size(tab, 2)
-
-    Σl  = 0.0
-    Σr  = 0.0
-    ∂Σl = 0.0
-    ∂Σr = 0.0
-
-    @inbounds for k in 1:num_terms
-        aD  = tab[1, k]
-        aM  = tab[2, k]
-        aM´ = tab[3, k]
-        aF  = tab[4, k]
-
-        arg  = aD * D + aM * M + aM´ * M´ + aF * F
-        ∂arg = aD * ∂D + aM * ∂M + aM´ * ∂M´ + aF * ∂F
-
-        # Check if we need to apply the correction `E`.
-        E_corr, ∂E_corr = if ((aM == 1) || (aM == -1))
-            E, ∂E
-        elseif ((aM == 2) || (aM == -2))
-            E², 2E * ∂E
-        else
-            one(E), zero(E)
-        end
-
-        sin_arg, cos_arg = sincos(arg)
-
-        Σl += tab[5, k] * E_corr * sin_arg
-        Σr += tab[6, k] * E_corr * cos_arg
-
-        ∂Σl += tab[5, k] * (∂E_corr * sin_arg + E_corr * cos_arg * ∂arg)
-        ∂Σr += tab[6, k] * (∂E_corr * cos_arg - E_corr * sin_arg * ∂arg)
-    end
-
-    # Sum the periodic terms in the table 47.B [2] for the latitude of the Moon, together
-    # with their time derivatives.
-    tab = _TAB_47B
-    num_terms = size(tab, 2)
-
-    Σb  = 0.0
-    ∂Σb = 0.0
-
-    @inbounds for k in 1:num_terms
-        aD  = tab[1, k]
-        aM  = tab[2, k]
-        aM´ = tab[3, k]
-        aF  = tab[4, k]
-
-        arg  = aD * D + aM * M + aM´ * M´ + aF * F
-        ∂arg = aD * ∂D + aM * ∂M + aM´ * ∂M´ + aF * ∂F
-
-        # Check if we need to apply the correction `E`.
-        E_corr, ∂E_corr = if ((aM == 1) || (aM == -1))
-            E, ∂E
-        elseif ((aM == 2) || (aM == -2))
-            E², 2E * ∂E
-        else
-            one(E), zero(E)
-        end
-
-        sin_arg, cos_arg = sincos(arg)
-
-        Σb  += tab[5, k] * E_corr * sin_arg
-        ∂Σb += tab[5, k] * (∂E_corr * sin_arg + E_corr * cos_arg * ∂arg)
-    end
+    # Sum the periodic terms in the tables 47.A and 47.B [2] for the longitude, distance,
+    # and latitude of the Moon, together with their time derivatives.
+    Σl, Σr, ∂Σl, ∂Σr = _sum_table_47a(D, M, M´, F, ∂D, ∂M, ∂M´, ∂F, E, ∂E)
+    Σb, ∂Σb          = _sum_table_47b(D, M, M´, F, ∂D, ∂M, ∂M´, ∂F, E, ∂E)
 
     # Apply the additive terms due to the action of Venus (`A₁`), Jupiter (`A₂`), and the
     # flattening of the Earth (`L´`) [2, p. 338], together with their time derivatives.
@@ -508,4 +443,164 @@ function _moon_state_mod(jd_tdb::Number, ::Val{:Vallado})
     )
 
     return r_moon_mod, v_moon_mod
+end
+
+"""
+    _sum_table_47a(
+        D::Number,
+        M::Number,
+        M´::Number,
+        F::Number,
+        ∂D::Number,
+        ∂M::Number,
+        ∂M´::Number,
+        ∂F::Number,
+        E::Number,
+        ∂E::Number
+    ) -> Number, Number, Number, Number
+
+Sum the periodic terms of the table 47.A **[2, pp. 339-340]** given the fundamental
+arguments `D`, `M`, `M´`, and `F` [rad], their time derivatives `∂D`, `∂M`, `∂M´`, and `∂F`
+[rad/century], the eccentricity correction factor `E` [-], and its time derivative `∂E`
+[1/century].
+
+The loop over the terms is unrolled at compile time so that the integer multipliers and
+the selection of the eccentricity correction become constants.
+
+# Returns
+
+- `Number`: Sum of the longitude terms Σl [10⁻⁶ °].
+- `Number`: Sum of the distance terms Σr [m].
+- `Number`: Time derivative of Σl [10⁻⁶ °/century].
+- `Number`: Time derivative of Σr [m/century].
+
+# References
+
+- **[2]** Meeus, J. (1998). *Astronomical Algorithms*. 2nd ed. Willmann-Bell, Inc,
+    Richmond, VA.
+"""
+function _sum_table_47a(
+    D::Number,
+    M::Number,
+    M´::Number,
+    F::Number,
+    ∂D::Number,
+    ∂M::Number,
+    ∂M´::Number,
+    ∂F::Number,
+    E::Number,
+    ∂E::Number
+)
+    T = promote_type(typeof(D), typeof(E))
+
+    Σl  = zero(T)
+    Σr  = zero(T)
+    ∂Σl = zero(T)
+    ∂Σr = zero(T)
+
+    E²  = E * E
+    ∂E² = 2E * ∂E
+
+    Base.Cartesian.@nexprs 60 k -> begin
+        aD, aM, aM´, aF, cl, cr = _TAB_47A[k]
+
+        arg  = aD * D + aM * M + aM´ * M´ + aF * F
+        ∂arg = aD * ∂D + aM * ∂M + aM´ * ∂M´ + aF * ∂F
+
+        # Select the eccentricity correction for this term. Since `aM` is a compile-time
+        # constant after unrolling, this selection has no runtime cost.
+        E_k, ∂E_k = if abs(aM) == 1
+            E, ∂E
+        elseif abs(aM) == 2
+            E², ∂E²
+        else
+            one(T), zero(T)
+        end
+
+        sin_arg, cos_arg = sincos(arg)
+
+        Σl  += cl * E_k * sin_arg
+        Σr  += cr * E_k * cos_arg
+        ∂Σl += cl * (∂E_k * sin_arg + E_k * cos_arg * ∂arg)
+        ∂Σr += cr * (∂E_k * cos_arg - E_k * sin_arg * ∂arg)
+    end
+
+    return Σl, Σr, ∂Σl, ∂Σr
+end
+
+"""
+    _sum_table_47b(
+        D::Number,
+        M::Number,
+        M´::Number,
+        F::Number,
+        ∂D::Number,
+        ∂M::Number,
+        ∂M´::Number,
+        ∂F::Number,
+        E::Number,
+        ∂E::Number
+    ) -> Number, Number
+
+Sum the periodic terms of the table 47.B **[2, p. 341]** given the fundamental arguments
+`D`, `M`, `M´`, and `F` [rad], their time derivatives `∂D`, `∂M`, `∂M´`, and `∂F`
+[rad/century], the eccentricity correction factor `E` [-], and its time derivative `∂E`
+[1/century].
+
+The loop over the terms is unrolled at compile time so that the integer multipliers and
+the selection of the eccentricity correction become constants.
+
+# Returns
+
+- `Number`: Sum of the latitude terms Σb [10⁻⁶ °].
+- `Number`: Time derivative of Σb [10⁻⁶ °/century].
+
+# References
+
+- **[2]** Meeus, J. (1998). *Astronomical Algorithms*. 2nd ed. Willmann-Bell, Inc,
+    Richmond, VA.
+"""
+function _sum_table_47b(
+    D::Number,
+    M::Number,
+    M´::Number,
+    F::Number,
+    ∂D::Number,
+    ∂M::Number,
+    ∂M´::Number,
+    ∂F::Number,
+    E::Number,
+    ∂E::Number
+)
+    T = promote_type(typeof(D), typeof(E))
+
+    Σb  = zero(T)
+    ∂Σb = zero(T)
+
+    E²  = E * E
+    ∂E² = 2E * ∂E
+
+    Base.Cartesian.@nexprs 60 k -> begin
+        aD, aM, aM´, aF, cb = _TAB_47B[k]
+
+        arg  = aD * D + aM * M + aM´ * M´ + aF * F
+        ∂arg = aD * ∂D + aM * ∂M + aM´ * ∂M´ + aF * ∂F
+
+        # Select the eccentricity correction for this term. Since `aM` is a compile-time
+        # constant after unrolling, this selection has no runtime cost.
+        E_k, ∂E_k = if abs(aM) == 1
+            E, ∂E
+        elseif abs(aM) == 2
+            E², ∂E²
+        else
+            one(T), zero(T)
+        end
+
+        sin_arg, cos_arg = sincos(arg)
+
+        Σb  += cb * E_k * sin_arg
+        ∂Σb += cb * (∂E_k * sin_arg + E_k * cos_arg * ∂arg)
+    end
+
+    return Σb, ∂Σb
 end
