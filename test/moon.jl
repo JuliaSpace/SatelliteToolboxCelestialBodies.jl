@@ -4,10 +4,10 @@
 #
 ## References ##############################################################################
 #
-# [1] Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
-#     Microcosm Press, Hawthorn, CA, USA.
+# [1] Vallado, D. A. (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
+#     Microcosm Press, Hawthorne, CA.
 #
-# [2] Meeus, J (1998). Astronomical algorithms. Willmann-Bell, Inc, Richmond, VA.
+# [2] Meeus, J. (1998). Astronomical Algorithms. 2nd ed. Willmann-Bell, Inc, Richmond, VA.
 #
 ############################################################################################
 
@@ -94,10 +94,11 @@ end
 
     # DateTime and Julian Day must give the same result.
     @test moon_position_mod(date_tdb, Val(:Meeus)) == moon_position_mod(jd_tdb, Val(:Meeus))
-    @test moon_position_mod(date_tdb, Val(:Vallado)) == moon_position_mod(jd_tdb, Val(:Vallado))
+    @test moon_position_mod(date_tdb, Val(:Vallado)) ==
+        moon_position_mod(jd_tdb, Val(:Vallado))
 end
 
-# -- Function moon_velocity_mod -----------------------------------------------------------
+# -- Function moon_velocity_mod ------------------------------------------------------------
 
 ############################################################################################
 #                                       Test Results                                       #
@@ -151,7 +152,8 @@ end
 
     # DateTime and Julian Day must give the same result.
     @test moon_velocity_mod(date_tdb, Val(:Meeus)) == moon_velocity_mod(jd_tdb, Val(:Meeus))
-    @test moon_velocity_mod(date_tdb, Val(:Vallado)) == moon_velocity_mod(jd_tdb, Val(:Vallado))
+    @test moon_velocity_mod(date_tdb, Val(:Vallado)) ==
+        moon_velocity_mod(jd_tdb, Val(:Vallado))
 end
 
 # -- Function moon_state_mod ---------------------------------------------------------------
@@ -181,15 +183,17 @@ end
     @test moon_state_mod(date_tdb) == moon_state_mod(date_tdb, Val(:Meeus))
 
     # A `Date` must be interpreted as the beginning of the day.
+    date = Date(1994, 4, 28)
+
     for model in (Val(:Meeus), Val(:Vallado))
-        @test moon_state_mod(Date(1994, 4, 28), model) == moon_state_mod(jd_tdb, model)
-        @test moon_position_mod(Date(1994, 4, 28), model) == moon_position_mod(jd_tdb, model)
-        @test moon_velocity_mod(Date(1994, 4, 28), model) == moon_velocity_mod(jd_tdb, model)
+        @test moon_state_mod(date, model) == moon_state_mod(jd_tdb, model)
+        @test moon_position_mod(date, model) == moon_position_mod(jd_tdb, model)
+        @test moon_velocity_mod(date, model) == moon_velocity_mod(jd_tdb, model)
     end
 
-    @test moon_state_mod(Date(1994, 4, 28)) == moon_state_mod(jd_tdb)
-    @test moon_position_mod(Date(1994, 4, 28)) == moon_position_mod(jd_tdb)
-    @test moon_velocity_mod(Date(1994, 4, 28)) == moon_velocity_mod(jd_tdb)
+    @test moon_state_mod(date) == moon_state_mod(jd_tdb)
+    @test moon_position_mod(date) == moon_position_mod(jd_tdb)
+    @test moon_velocity_mod(date) == moon_velocity_mod(jd_tdb)
 end
 
 @testset "Moon Model Errors" begin

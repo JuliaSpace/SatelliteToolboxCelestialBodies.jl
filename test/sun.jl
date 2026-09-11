@@ -1,11 +1,11 @@
 ## Description #############################################################################
 #
-# Tests related to the position of the Sun.
+# Tests related to the position and velocity of the Sun.
 #
 ## References ##############################################################################
 #
-# [1] Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
-#     Microcosm Press, Hawthorn, CA, USA.
+# [1] Vallado, D. A. (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
+#     Microcosm Press, Hawthorne, CA.
 #
 ############################################################################################
 
@@ -35,7 +35,7 @@
     @test s_mod[3] ≈ 0.0834308 atol = 2e-6
 end
 
-# -- Function sun_velocity_mode ------------------------------------------------------------
+# -- Function sun_velocity_mod -------------------------------------------------------------
 
 ############################################################################################
 #                                       Test Results                                       #
@@ -47,7 +47,7 @@ end
 #
 ############################################################################################
 
-@testset "Function sun_velocity_i" begin
+@testset "Sun Velocity" begin
     jd_start = date_to_jd(1950, 1, 1, 0, 0, 0)
     jd_stop  = date_to_jd(2019, 1, 1, 0, 0, 0)
 
