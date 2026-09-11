@@ -17,7 +17,7 @@ else
         JET.test_package(
             SatelliteToolboxCelestialBodies;
             toplevel_logger = nothing,
-            target_modules = (SatelliteToolboxCelestialBodies,)
+            target_modules = (SatelliteToolboxCelestialBodies,),
         )
     end
 end
@@ -96,7 +96,8 @@ end
         @test v_ad ≈ sun_velocity_mod(jd_tdb) rtol = 1e-10
 
         for model in (Val(:Meeus), Val(:Vallado))
-            v_ad = ForwardDiff.derivative(jd -> moon_position_mod(jd, model), jd_tdb) / 86400
+            v_ad =
+                ForwardDiff.derivative(jd -> moon_position_mod(jd, model), jd_tdb) / 86400
             @test v_ad ≈ moon_velocity_mod(jd_tdb, model) rtol = 1e-10
         end
     end

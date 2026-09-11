@@ -183,11 +183,16 @@ function moon_state_mod(date_tdb::Union{Date, DateTime}, model::Val)
 end
 
 function moon_state_mod(::Number, ::Val{M}) where {M}
-    throw(ArgumentError(
-        "The Moon model :$M is not supported. The available models are :Meeus and :Vallado."
-    ))
+    return throw(
+        ArgumentError(
+            "The Moon model :$M is not supported. The available models are :Meeus and :Vallado.",
+        ),
+    )
 end
 
+# NOTE: The formatter is disabled for the following functions to keep the hand-aligned
+# numeric expressions, which improve the readability of the algorithms.
+#! format: off
 function moon_state_mod(jd_tdb::Number, ::Val{:Meeus})
     # Number of Julian centuries from the J2000 epoch [TDB].
     t_tdb = (jd_tdb - JD_J2000) / 36525
@@ -523,6 +528,7 @@ function moon_state_mod(jd_tdb::Number, ::Val{:Vallado})
 
     return r_moon_mod, v_moon_mod
 end
+#! format: on
 
 ############################################################################################
 #                                    Private Functions                                     #
@@ -572,7 +578,7 @@ function _sum_table_47a(
     ∂M´::Number,
     ∂F::Number,
     E::Number,
-    ∂E::Number
+    ∂E::Number,
 )
     T = promote_type(typeof(D), typeof(E))
 
@@ -653,7 +659,7 @@ function _sum_table_47b(
     ∂M´::Number,
     ∂F::Number,
     E::Number,
-    ∂E::Number
+    ∂E::Number,
 )
     T = promote_type(typeof(D), typeof(E))
 

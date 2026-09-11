@@ -110,6 +110,9 @@ function sun_state_mod(date_tdb::Union{Date, DateTime})
     return sun_state_mod(datetime2julian(DateTime(date_tdb)))
 end
 
+# NOTE: The formatter is disabled for the following function to keep the hand-aligned
+# numeric expressions, which improve the readability of the algorithm.
+#! format: off
 function sun_state_mod(jd_tdb::Number)
     # Number of Julian centuries from the J2000 epoch [TDB].
     t_tdb = (jd_tdb - JD_J2000) / 36525
@@ -173,3 +176,4 @@ function sun_state_mod(jd_tdb::Number)
 
     return s_mod, ṡ_mod
 end
+#! format: on
