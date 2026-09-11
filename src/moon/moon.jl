@@ -103,6 +103,8 @@ Prefer this function over calling [`moon_position_mod`](@ref) and
 [`moon_velocity_mod`](@ref) separately when both quantities are required, since the
 computation is shared.
 
+The function throws an error if `model` is not one of the supported models.
+
 See also: [`moon_position_mod`](@ref), [`moon_velocity_mod`](@ref)
 
 # Arguments
@@ -130,12 +132,22 @@ The element type `T` of the result is `promote_type(float(typeof(jd_tdb)), Float
 Hence, `Float32` inputs yield `Float64` results because the precision of the series
 requires it, whereas wider types, such as `BigFloat` or automatic differentiation numbers,
 propagate to the output.
+
+## Throws
+
+- `ArgumentError`: `model` is neither `Val(:Meeus)` nor `Val(:Vallado)`.
 """
 moon_state_mod(date_tdb::Union{Date, DateTime}) = moon_state_mod(date_tdb, Val(:Meeus))
 moon_state_mod(jd_tdb::Number) = moon_state_mod(jd_tdb, Val(:Meeus))
 
 function moon_state_mod(date_tdb::Union{Date, DateTime}, model::Val)
     return moon_state_mod(datetime2julian(DateTime(date_tdb)), model)
+end
+
+function moon_state_mod(::Number, ::Val{M}) where {M}
+    throw(ArgumentError(
+        "The Moon model :$M is not supported. The available models are :Meeus and :Vallado."
+    ))
 end
 
 function moon_state_mod(jd_tdb::Number, ::Val{:Meeus})

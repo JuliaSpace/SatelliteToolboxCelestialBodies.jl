@@ -191,3 +191,12 @@ end
     @test moon_position_mod(Date(1994, 4, 28)) == moon_position_mod(jd_tdb)
     @test moon_velocity_mod(Date(1994, 4, 28)) == moon_velocity_mod(jd_tdb)
 end
+
+@testset "Moon Model Errors" begin
+    jd_tdb = date_to_jd(2000, 1, 1, 12, 0, 0)
+
+    @test_throws ArgumentError moon_state_mod(jd_tdb, Val(:Brown))
+    @test_throws ArgumentError moon_position_mod(jd_tdb, Val(:Brown))
+    @test_throws ArgumentError moon_velocity_mod(jd_tdb, Val(:Brown))
+    @test_throws ArgumentError moon_position_mod(DateTime(2000, 1, 1, 12), Val(:Brown))
+end
