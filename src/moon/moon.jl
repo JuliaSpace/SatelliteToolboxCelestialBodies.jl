@@ -300,22 +300,45 @@ function moon_state_mod(jd_tdb::Number, ::Val{:Meeus})
 
     # == Periodic Terms ====================================================================
 
+    # Sines and cosines of the fundamental arguments. The arguments of the periodic terms
+    # are integer combinations of them, whose sines and cosines are obtained with the angle
+    # addition formulas instead of calling `sincos` for each term. Besides being faster,
+    # this approach avoids rounding the combinations, which can reach thousands of radians
+    # far from J2000.
+    sc_D  = sincos(D)
+    sc_M  = sincos(M)
+    sc_M´ = sincos(M´)
+    sc_F  = sincos(F)
+
     # Sum the periodic terms in the tables 47.A and 47.B [2] for the longitude, distance,
-    # and latitude of the Moon, together with their time derivatives.
-    Σl, Σr, ∂Σl, ∂Σr = _sum_table_47a(D, M, M´, F, ∂D, ∂M, ∂M´, ∂F, E, ∂E)
-    Σb, ∂Σb          = _sum_table_47b(D, M, M´, F, ∂D, ∂M, ∂M´, ∂F, E, ∂E)
+    # and latitude of the Moon, together with their time derivatives. The table 47.B has
+    # only sine terms, so its cosine sums are discarded.
+    Σl, Σr, ∂Σl, ∂Σr = _sum_periodic_terms(
+        Val(:Table47A),
+        sc_D, sc_M, sc_M´, sc_F, ∂D, ∂M, ∂M´, ∂F, E, ∂E
+    )
+
+    Σb, _, ∂Σb, _ = _sum_periodic_terms(
+        Val(:Table47B),
+        sc_D, sc_M, sc_M´, sc_F, ∂D, ∂M, ∂M´, ∂F, E, ∂E
+    )
 
     # Apply the additive terms due to the action of Venus (`A₁`), Jupiter (`A₂`), and the
     # flattening of the Earth (`L´`) [2, p. 338], together with their time derivatives.
-    sin_A₁,     cos_A₁     = sincos(A₁)
-    sin_A₂,     cos_A₂     = sincos(A₂)
-    sin_A₃,     cos_A₃     = sincos(A₃)
-    sin_L´,     cos_L´     = sincos(L´)
-    sin_L´_mF,  cos_L´_mF  = sincos(L´ - F)
-    sin_A₁_mF,  cos_A₁_mF  = sincos(A₁ - F)
-    sin_A₁_pF,  cos_A₁_pF  = sincos(A₁ + F)
-    sin_L´_mM´, cos_L´_mM´ = sincos(L´ - M´)
-    sin_L´_pM´, cos_L´_pM´ = sincos(L´ + M´)
+    sc_A₁ = sincos(A₁)
+    sc_A₂ = sincos(A₂)
+    sc_A₃ = sincos(A₃)
+    sc_L´ = sincos(L´)
+
+    sin_A₁,     cos_A₁     = sc_A₁
+    sin_A₂,     cos_A₂     = sc_A₂
+    sin_A₃,     cos_A₃     = sc_A₃
+    sin_L´,     cos_L´     = sc_L´
+    sin_L´_mF,  cos_L´_mF  = _sincos_sub(sc_L´, sc_F)
+    sin_A₁_mF,  cos_A₁_mF  = _sincos_sub(sc_A₁, sc_F)
+    sin_A₁_pF,  cos_A₁_pF  = _sincos_add(sc_A₁, sc_F)
+    sin_L´_mM´, cos_L´_mM´ = _sincos_sub(sc_L´, sc_M´)
+    sin_L´_pM´, cos_L´_pM´ = _sincos_add(sc_L´, sc_M´)
 
     Σl += 3958sin_A₁ + 1962sin_L´_mF + 318sin_A₂
 
@@ -508,11 +531,22 @@ end
 ############################################################################################
 
 """
-    _sum_table_47a(
-        D::Number,
-        M::Number,
-        M´::Number,
-        F::Number,
+    _periodic_terms_table(::Val{:Table47A}) -> NTuple{60, SVector{6, Int32}}
+    _periodic_terms_table(::Val{:Table47B}) -> NTuple{60, SVector{5, Int32}}
+
+Return the table of periodic terms selected by the tag: [`_TAB_47A`](@ref) for
+`Val(:Table47A)` and [`_TAB_47B`](@ref) for `Val(:Table47B)`.
+"""
+_periodic_terms_table(::Val{:Table47A}) = _TAB_47A
+_periodic_terms_table(::Val{:Table47B}) = _TAB_47B
+
+"""
+    _sum_periodic_terms(
+        ::Val{table},
+        sc_D::Tuple{T, T},
+        sc_M::Tuple{T, T},
+        sc_M´::Tuple{T, T},
+        sc_F::Tuple{T, T},
         ∂D::Number,
         ∂M::Number,
         ∂M´::Number,
@@ -521,148 +555,136 @@ end
         ∂E::Number
     ) -> Number, Number, Number, Number
 
-Sum the periodic terms of the table 47.A **[2, pp. 339-340]** given the fundamental
-arguments `D`, `M`, `M´`, and `F` [rad], their time derivatives `∂D`, `∂M`, `∂M´`, and `∂F`
-[rad/century], the eccentricity correction factor `E` [-], and its time derivative `∂E`
-[1/century].
+Sum the periodic terms of the `table`, which must be `:Table47A` **[2, pp. 339-340]** or
+`:Table47B` **[2, p. 341]**, given the tuples `sc_D`, `sc_M`, `sc_M´`, and `sc_F` with the
+sines and cosines of the fundamental arguments `D`, `M`, `M´`, and `F`, their time
+derivatives `∂D`, `∂M`, `∂M´`, and `∂F` [rad/century], the eccentricity correction factor
+`E` [-], and its time derivative `∂E` [1/century].
 
-The loop over the terms is unrolled at compile time so that the integer multipliers and
-the selection of the eccentricity correction become constants.
+The sums are computed as:
+
+```math
+Σ_s = \\sum_k c_{s, k} E_k \\sin(θ_k), \\quad Σ_c = \\sum_k c_{c, k} E_k \\cos(θ_k),
+```
+
+where `θ_k` is the integer combination of the fundamental arguments of the term `k`,
+`c_{s, k}` and `c_{c, k}` are its sine and cosine coefficients, and `E_k` is `E`, `E²`, or
+1 depending on the multiplier of `M`. The tables without cosine coefficients yield zero
+cosine sums.
+
+The function is generated from the selected table so that the multipliers become literal
+constants: the sines and cosines of the arguments are composed from those of the
+fundamental arguments using the angle addition formulas, and the terms with null
+multipliers are removed at compile time. Hence, the sines and cosines in `sc_D`, `sc_M`,
+`sc_M´`, and `sc_F` must be accurate since every term is derived from them.
 
 # Returns
 
-- `Number`: Sum of the longitude terms Σl [10⁻⁶ °].
-- `Number`: Sum of the distance terms Σr [m].
-- `Number`: Time derivative of Σl [10⁻⁶ °/century].
-- `Number`: Time derivative of Σr [m/century].
+- `Number`: Sum of the sine terms Σₛ, in the unit of the sine coefficients of the table.
+- `Number`: Sum of the cosine terms Σ_c, in the unit of the cosine coefficients of the
+    table.
+- `Number`: Time derivative of Σₛ [1/century].
+- `Number`: Time derivative of Σ_c [1/century].
 
 # References
 
 - **[2]** Meeus, J. (1998). *Astronomical Algorithms*. 2nd ed. Willmann-Bell, Inc,
     Richmond, VA.
 """
-function _sum_table_47a(
-    D::Number,
-    M::Number,
-    M´::Number,
-    F::Number,
+@generated function _sum_periodic_terms(
+    ::Val{table},
+    sc_D::Tuple{T, T},
+    sc_M::Tuple{T, T},
+    sc_M´::Tuple{T, T},
+    sc_F::Tuple{T, T},
     ∂D::Number,
     ∂M::Number,
     ∂M´::Number,
     ∂F::Number,
     E::Number,
     ∂E::Number,
-)
-    T = promote_type(typeof(D), typeof(E))
+) where {table, T <: Number}
+    # NOTE: This function is generated because the table is only known at compile time
+    # through its tag, and we want the multipliers to be literal constants in the
+    # unrolled code, which lets the compiler remove the null terms and the runtime
+    # selection of the eccentricity correction.
+    rows = _periodic_terms_table(Val(table))
 
-    Σl  = zero(T)
-    Σr  = zero(T)
-    ∂Σl = zero(T)
-    ∂Σr = zero(T)
+    # Maximum absolute multiplier of each fundamental argument, defining how many multiples
+    # of its sine and cosine must be computed.
+    n_D, n_M, n_M´, n_F = ntuple(i -> maximum(Int(abs(row[i])) for row in rows), 4)
 
-    E²  = E * E
-    ∂E² = 2E * ∂E
+    # Symbols of the local variables holding the multiples of each fundamental argument and
+    # of the time derivatives of the arguments, in the same order of the table columns.
+    multiples   = (:mult_D, :mult_M, :mult_M´, :mult_F)
+    derivatives = (:∂D, :∂M, :∂M´, :∂F)
 
-    Base.Cartesian.@nexprs 60 k -> begin
-        aD, aM, aM´, aF, cl, cr = _TAB_47A[k]
+    terms = Expr[]
 
-        arg  = aD * D + aM * M + aM´ * M´ + aF * F
-        ∂arg = aD * ∂D + aM * ∂M + aM´ * ∂M´ + aF * ∂F
+    for row in rows
+        aD, aM, aM´, aF = Int(row[1]), Int(row[2]), Int(row[3]), Int(row[4])
+        c_s = Int(row[5])
+        c_c = length(row) == 6 ? Int(row[6]) : 0
 
-        # Select the eccentricity correction for this term. Since `aM` is a compile-time
-        # constant after unrolling, this selection has no runtime cost.
-        E_k, ∂E_k = if abs(aM) == 1
-            E, ∂E
-        elseif abs(aM) == 2
-            E², ∂E²
-        else
-            one(T), zero(T)
+        # Sine and cosine of the argument, composed only from the non-null multipliers.
+        sc_factors = Expr[]
+        ∂arg_terms = Expr[]
+
+        for (a, mult, ∂) in zip((aD, aM, aM´, aF), multiples, derivatives)
+            a == 0 && continue
+            push!(sc_factors, :(_sincos_multiple($mult, $a)))
+            push!(∂arg_terms, :($a * $∂))
         end
 
-        sin_arg, cos_arg = sincos(arg)
+        sc_arg =
+            isempty(sc_factors) ? :((zero(T), one(T))) :
+            foldl((sc_a, sc_b) -> :(_sincos_add($sc_a, $sc_b)), sc_factors)
 
-        Σl  += cl * E_k * sin_arg
-        Σr  += cr * E_k * cos_arg
-        ∂Σl += cl * (∂E_k * sin_arg + E_k * cos_arg * ∂arg)
-        ∂Σr += cr * (∂E_k * cos_arg - E_k * sin_arg * ∂arg)
-    end
+        ∂arg = isempty(∂arg_terms) ? :(zero(T)) : Expr(:call, :+, ∂arg_terms...)
 
-    return Σl, Σr, ∂Σl, ∂Σr
-end
-
-"""
-    _sum_table_47b(
-        D::Number,
-        M::Number,
-        M´::Number,
-        F::Number,
-        ∂D::Number,
-        ∂M::Number,
-        ∂M´::Number,
-        ∂F::Number,
-        E::Number,
-        ∂E::Number
-    ) -> Number, Number
-
-Sum the periodic terms of the table 47.B **[2, p. 341]** given the fundamental arguments
-`D`, `M`, `M´`, and `F` [rad], their time derivatives `∂D`, `∂M`, `∂M´`, and `∂F`
-[rad/century], the eccentricity correction factor `E` [-], and its time derivative `∂E`
-[1/century].
-
-The loop over the terms is unrolled at compile time so that the integer multipliers and
-the selection of the eccentricity correction become constants.
-
-# Returns
-
-- `Number`: Sum of the latitude terms Σb [10⁻⁶ °].
-- `Number`: Time derivative of Σb [10⁻⁶ °/century].
-
-# References
-
-- **[2]** Meeus, J. (1998). *Astronomical Algorithms*. 2nd ed. Willmann-Bell, Inc,
-    Richmond, VA.
-"""
-function _sum_table_47b(
-    D::Number,
-    M::Number,
-    M´::Number,
-    F::Number,
-    ∂D::Number,
-    ∂M::Number,
-    ∂M´::Number,
-    ∂F::Number,
-    E::Number,
-    ∂E::Number,
-)
-    T = promote_type(typeof(D), typeof(E))
-
-    Σb  = zero(T)
-    ∂Σb = zero(T)
-
-    E²  = E * E
-    ∂E² = 2E * ∂E
-
-    Base.Cartesian.@nexprs 60 k -> begin
-        aD, aM, aM´, aF, cb = _TAB_47B[k]
-
-        arg  = aD * D + aM * M + aM´ * M´ + aF * F
-        ∂arg = aD * ∂D + aM * ∂M + aM´ * ∂M´ + aF * ∂F
-
-        # Select the eccentricity correction for this term. Since `aM` is a compile-time
-        # constant after unrolling, this selection has no runtime cost.
+        # Eccentricity correction factor of the term and its time derivative.
         E_k, ∂E_k = if abs(aM) == 1
-            E, ∂E
+            :E, :∂E
         elseif abs(aM) == 2
-            E², ∂E²
+            :E², :∂E²
         else
-            one(T), zero(T)
+            1, 0
         end
 
-        sin_arg, cos_arg = sincos(arg)
+        push!(terms, quote
+            sin_arg, cos_arg = $sc_arg
+            ∂arg = $∂arg
+            Σ_s += $c_s * $E_k * sin_arg
+            ∂Σ_s += $c_s * ($∂E_k * sin_arg + $E_k * cos_arg * ∂arg)
+        end)
 
-        Σb  += cb * E_k * sin_arg
-        ∂Σb += cb * (∂E_k * sin_arg + E_k * cos_arg * ∂arg)
+        c_c == 0 && continue
+
+        push!(terms, quote
+            Σ_c  += $c_c * $E_k * cos_arg
+            ∂Σ_c += $c_c * ($∂E_k * cos_arg - $E_k * sin_arg * ∂arg)
+        end)
     end
 
-    return Σb, ∂Σb
+    return quote
+        R = promote_type(T, typeof(E))
+
+        Σ_s  = zero(R)
+        Σ_c  = zero(R)
+        ∂Σ_s = zero(R)
+        ∂Σ_c = zero(R)
+
+        E²  = E * E
+        ∂E² = 2E * ∂E
+
+        # Sines and cosines of the multiples of the fundamental arguments.
+        mult_D  = _sincos_multiples(sc_D, Val($n_D))
+        mult_M  = _sincos_multiples(sc_M, Val($n_M))
+        mult_M´ = _sincos_multiples(sc_M´, Val($n_M´))
+        mult_F  = _sincos_multiples(sc_F, Val($n_F))
+
+        $(terms...)
+
+        return Σ_s, Σ_c, ∂Σ_s, ∂Σ_c
+    end
 end
