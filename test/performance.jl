@@ -24,10 +24,19 @@ end
 
 # == Type Inference and Allocations ========================================================
 
-# Measure the allocations of `f(args...)` after a warm-up call.
-function _allocations(f, args...)
-    f(args...)
-    return @allocated f(args...)
+# Measure the allocations of `f(x)` and `f(x, y)` after a warm-up call.
+#
+# NOTE: The methods have fixed arity instead of splatting `args...` because Julia 1.10
+# cannot elide the allocations of the splat inside `@allocated`, which would be counted as
+# allocations of `f`.
+function _allocations(f, x)
+    f(x)
+    return @allocated f(x)
+end
+
+function _allocations(f, x, y)
+    f(x, y)
+    return @allocated f(x, y)
 end
 
 @testset "Type Inference and Allocations" begin
