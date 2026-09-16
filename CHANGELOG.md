@@ -13,10 +13,10 @@ Version 1.1.0
 - ![Enhancement][badge-enhancement] The algorithms are now generic in the numeric type of
   the input, propagating types such as `BigFloat` and automatic differentiation numbers.
   `Float32` inputs are promoted to `Float64`.
-- ![Enhancement][badge-enhancement] The Meeus tables are now stored as tuples of static
-  vectors and the sums over their terms are unrolled at compile time, improving the
-  performance of the Meeus model by roughly 25 % for the position and 40 % for the
-  velocity.
+- ![Enhancement][badge-enhancement] The sums over the Meeus tables are now generated at
+  compile time with literal multipliers, and the sines and cosines of the arguments are
+  composed from those of the fundamental arguments using the angle addition formulas
+  instead of one `sincos` call per term. The Meeus model is now roughly 4 times faster.
 - ![Enhancement][badge-enhancement] The duplicated code between the position and velocity
   functions was removed.
 - ![Enhancement][badge-enhancement] The package now has a documentation site and a
