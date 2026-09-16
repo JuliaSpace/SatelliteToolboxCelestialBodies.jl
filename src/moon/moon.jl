@@ -185,7 +185,8 @@ end
 function moon_state_mod(::Number, ::Val{M}) where {M}
     return throw(
         ArgumentError(
-            "The Moon model :$M is not supported. The available models are :Meeus and :Vallado.",
+            "The Moon model :$M is not supported. " *
+            "The available models are :Meeus and :Vallado.",
         ),
     )
 end
