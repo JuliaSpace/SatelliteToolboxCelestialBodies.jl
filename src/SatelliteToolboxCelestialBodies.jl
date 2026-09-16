@@ -18,8 +18,8 @@ import PrecompileTools
 #                                        Constants                                         #
 ############################################################################################
 
-# Conversion factor from Julian centuries to seconds [s/century].
-const _CENTURY_TO_SECONDS = 1 / (36525 * 86400)
+# Conversion factor from rates per Julian century to rates per second [century/s].
+const _CENTURIES_PER_SECOND = 1 / (36525 * 86400)
 
 ############################################################################################
 #                                         Includes                                         #

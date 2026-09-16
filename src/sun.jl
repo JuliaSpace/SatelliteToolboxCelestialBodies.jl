@@ -157,9 +157,9 @@ function sun_state_mod(jd_tdb::Number)
     # == Sun Velocity ======================================================================
 
     # Time derivatives of the fundamental arguments [rad/s].
-    ∂λ_m = deg2rad(36_000.771)    * _CENTURY_TO_SECONDS
-    ∂Ms  = deg2rad(35_999.050_34) * _CENTURY_TO_SECONDS
-    ∂ϵ   = deg2rad(-0.013_004_2)  * _CENTURY_TO_SECONDS
+    ∂λ_m = deg2rad(36_000.771)    * _CENTURIES_PER_SECOND
+    ∂Ms  = deg2rad(35_999.050_34) * _CENTURIES_PER_SECOND
+    ∂ϵ   = deg2rad(-0.013_004_2)  * _CENTURIES_PER_SECOND
 
     # Time derivatives of the Sun distance [m/s] and of the ecliptic longitude [rad/s].
     ∂r   = (0.016_708_617sin_Ms + 2 * 0.000_139_589sin_2Ms) * ∂Ms * ASTRONOMICAL_UNIT

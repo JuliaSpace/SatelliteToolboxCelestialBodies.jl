@@ -372,10 +372,10 @@ function moon_state_mod(jd_tdb::Number, ::Val{:Meeus})
     Δ = 385_000.56e3 + Σr
 
     # Time derivatives of the Moon coordinates [rad/s] and [m/s].
-    ∂λ = (∂L´ + deg2rad(∂Σl / 1_000_000)) * _CENTURY_TO_SECONDS
-    ∂β = deg2rad(∂Σb / 1_000_000) * _CENTURY_TO_SECONDS
-    ∂Δ = ∂Σr * _CENTURY_TO_SECONDS
-    ∂ϵ = deg2rad(∂ϵ_deg) * _CENTURY_TO_SECONDS
+    ∂λ = (∂L´ + deg2rad(∂Σl / 1_000_000)) * _CENTURIES_PER_SECOND
+    ∂β = deg2rad(∂Σb / 1_000_000) * _CENTURIES_PER_SECOND
+    ∂Δ = ∂Σr * _CENTURIES_PER_SECOND
+    ∂ϵ = deg2rad(∂ϵ_deg) * _CENTURIES_PER_SECOND
 
     # == Position and Velocity =============================================================
 
@@ -480,10 +480,10 @@ function moon_state_mod(jd_tdb::Number, ::Val{:Vallado})
     P  = deg2rad(P)
     ϵ  = deg2rad(ϵ)
 
-    ∂λₑ = deg2rad(∂λₑ) * _CENTURY_TO_SECONDS
-    ∂ϕₑ = deg2rad(∂ϕₑ) * _CENTURY_TO_SECONDS
-    ∂P  = deg2rad(∂P)  * _CENTURY_TO_SECONDS
-    ∂ϵ  = deg2rad(∂ϵ)  * _CENTURY_TO_SECONDS
+    ∂λₑ = deg2rad(∂λₑ) * _CENTURIES_PER_SECOND
+    ∂ϕₑ = deg2rad(∂ϕₑ) * _CENTURIES_PER_SECOND
+    ∂P  = deg2rad(∂P)  * _CENTURIES_PER_SECOND
+    ∂ϵ  = deg2rad(∂ϵ)  * _CENTURIES_PER_SECOND
 
     # == Moon Coordinates ==================================================================
 
