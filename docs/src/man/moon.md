@@ -28,7 +28,7 @@ The `model` selects the algorithm and must be `Val(:Meeus)` (default) or `Val(:V
 - `Val(:Meeus)` uses the algorithm in **[2, ch. 47]** that provides an accuracy of 10 arcsec
   in the longitude and 4 arcsec in the latitude (the reference does not mention the
   timespan).
-- `Val(:Vallado)` uses the algorithm in **[1, p. 288]** that is about 10 times faster than
+- `Val(:Vallado)` uses the algorithm in **[1, p. 288]** that is about 3 times faster than
   `Val(:Meeus)` but can lead to errors of 0.3° in longitude and 0.2° in latitude.
 
 In both cases, the velocity is obtained by differentiating the position analytically. The
@@ -48,7 +48,7 @@ moon_state_mod(date_to_jd(1994, 4, 28, 0, 0, 0), Val(:Vallado))
 !!! note
 
     The current civil time, as returned by `now()`, is neither TDB nor UTC. The difference
-    between UTC and TDB is roughly 69 s (in 2025), which is negligible for the accuracy of
+    between UTC and TDB is roughly 69 s, which is negligible for the accuracy of
     these models. Hence, `now(UTC)` can be used as the input epoch.
 
 ## References

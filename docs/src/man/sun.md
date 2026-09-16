@@ -39,7 +39,7 @@ sun_state_mod(date_to_jd(2006, 4, 2, 0, 0, 0))
 !!! note
 
     The current civil time, as returned by `now()`, is neither TDB nor UTC. The difference
-    between UTC and TDB is roughly 69 s (in 2025), which is negligible for the accuracy of
+    between UTC and TDB is roughly 69 s, which is negligible for the accuracy of
     these models. Hence, `now(UTC)` can be used as the input epoch.
 
 ## References

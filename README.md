@@ -28,8 +28,9 @@ julia> Pkg.add("SatelliteToolboxCelestialBodies")
 The position [m] and velocity [m/s] of the Sun and Moon represented in the IAU-76/FK5
 mean-equator, mean-equinox of date (MOD) reference frame can be computed using the
 functions `sun_position_mod`, `sun_velocity_mod`, `sun_state_mod`, `moon_position_mod`,
-`moon_velocity_mod`, and `moon_state_mod`. The input epoch is a Julian Day or a `DateTime`
-in the [Barycentric Dynamical Time (TDB)](https://en.wikipedia.org/wiki/Barycentric_Dynamical_Time).
+`moon_velocity_mod`, and `moon_state_mod`. The input epoch is a Julian Day, a `Date`, or a
+`DateTime` in the
+[Barycentric Dynamical Time (TDB)](https://en.wikipedia.org/wiki/Barycentric_Dynamical_Time).
 
 ```julia
 julia> sun_position_mod(now(UTC))

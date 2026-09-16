@@ -49,6 +49,12 @@ See also: [`moon_state_mod`](@ref), [`moon_velocity_mod`](@ref)
     Microcosm Press, Hawthorne, CA.
 - **[2]** Meeus, J. (1998). *Astronomical Algorithms*. 2nd ed. Willmann-Bell, Inc,
     Richmond, VA.
+
+# Extended help
+
+## Throws
+
+- `ArgumentError`: `model` is neither `Val(:Meeus)` nor `Val(:Vallado)`.
 """
 function moon_position_mod(date_tdb::Union{Date, DateTime})
     return moon_position_mod(date_tdb, Val(:Meeus))
@@ -101,6 +107,12 @@ See also: [`moon_state_mod`](@ref), [`moon_position_mod`](@ref)
     Microcosm Press, Hawthorne, CA.
 - **[2]** Meeus, J. (1998). *Astronomical Algorithms*. 2nd ed. Willmann-Bell, Inc,
     Richmond, VA.
+
+# Extended help
+
+## Throws
+
+- `ArgumentError`: `model` is neither `Val(:Meeus)` nor `Val(:Vallado)`.
 """
 function moon_velocity_mod(date_tdb::Union{Date, DateTime})
     return moon_velocity_mod(date_tdb, Val(:Meeus))
@@ -131,7 +143,7 @@ both in the Barycentric Dynamical Time (TDB).
 The `model` selects the algorithm and must be `Val(:Meeus)` or `Val(:Vallado)`.
 `Val(:Meeus)` uses the algorithm in **[2, ch. 47]** that provides an accuracy of 10 [arcsec]
 in the longitude and 4 [arcsec] in the latitude (the reference does not mention the
-timespan). `Val(:Vallado)` uses the algorithm in **[1, p. 288]** that is about 10 times
+timespan). `Val(:Vallado)` uses the algorithm in **[1, p. 288]** that is about 3 times
 faster than `Val(:Meeus)` but can lead to errors of 0.3 [°] in longitude and 0.2 [°] in
 latitude. In both cases, the velocity is the analytical time derivative of the position.
 Prefer this function over calling [`moon_position_mod`](@ref) and
