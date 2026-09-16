@@ -28,6 +28,7 @@ const _CENTURIES_PER_SECOND = 1 / (36525 * 86400)
 include("./moon/constants.jl")
 include("./moon/moon.jl")
 
+include("./math.jl")
 include("./sun.jl")
 
 include("./precompile.jl")

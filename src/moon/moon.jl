@@ -199,116 +199,90 @@ function moon_state_mod(jd_tdb::Number, ::Val{:Meeus})
 
     # == Fundamental Arguments =============================================================
 
-    # Moon's mean longitude referred to the mean equinox of date [deg].
-    L´ = @evalpoly(
+    # The fundamental arguments are polynomials in `t_tdb` [deg], and their time derivatives
+    # [deg/century] are obtained by differentiating the polynomials.
+
+    # Moon's mean longitude referred to the mean equinox of date.
+    L´_deg, ∂L´_deg = _evalpoly_with_derivative(
         t_tdb,
-        +218.316_447_7,
-        +481_267.881_234_21,
-        -0.001_578_6,
-        +1 / 538_841,
-        -1 / 65_194_000
+        (
+            +218.316_447_7,
+            +481_267.881_234_21,
+            -0.001_578_6,
+            +1 / 538_841,
+            -1 / 65_194_000,
+        )
     )
 
-    # Mean elongation of the Moon [deg].
-    D = @evalpoly(
+    # Mean elongation of the Moon.
+    D_deg, ∂D_deg = _evalpoly_with_derivative(
         t_tdb,
-        +297.850_192_1,
-        +445_267.111_403_4,
-        -0.001_881_9,
-        +1 / 545_868,
-        -1 / 113_065_000
+        (
+            +297.850_192_1,
+            +445_267.111_403_4,
+            -0.001_881_9,
+            +1 / 545_868,
+            -1 / 113_065_000,
+        )
     )
 
-    # Sun's mean anomaly [deg].
-    M = @evalpoly(
+    # Sun's mean anomaly.
+    M_deg, ∂M_deg = _evalpoly_with_derivative(
         t_tdb,
-        +357.529_109_2,
-        +35_999.050_290_9,
-        -0.000_153_6,
-        +1 / 24_490_000
+        (
+            +357.529_109_2,
+            +35_999.050_290_9,
+            -0.000_153_6,
+            +1 / 24_490_000,
+        )
     )
 
-    # Moon's mean anomaly [deg].
-    M´ = @evalpoly(
+    # Moon's mean anomaly.
+    M´_deg, ∂M´_deg = _evalpoly_with_derivative(
         t_tdb,
-        +134.963_396_4,
-        +477_198.867_505_5,
-        +0.008_741_4,
-        +1 / 69_699,
-        -1 / 14_712_000
+        (
+            +134.963_396_4,
+            +477_198.867_505_5,
+            +0.008_741_4,
+            +1 / 69_699,
+            -1 / 14_712_000,
+        )
     )
 
-    # Moon's argument of latitude (mean distance of the Moon from its ascending node) [deg].
-    F = @evalpoly(
+    # Moon's argument of latitude (mean distance of the Moon from its ascending node).
+    F_deg, ∂F_deg = _evalpoly_with_derivative(
         t_tdb,
-        +93.272_095_0,
-        +483_202.017_523_3,
-        -0.003_653_9,
-        -1 / 3_526_000,
-        +1 / 863_310_000
+        (
+            +93.272_095_0,
+            +483_202.017_523_3,
+            -0.003_653_9,
+            -1 / 3_526_000,
+            +1 / 863_310_000,
+        )
     )
 
-    # Obliquity of the ecliptic [deg].
-    ϵ = @evalpoly(t_tdb, 23.439_291, -0.013_004_2, -1.64e-7, +5.04e-7)
-
-    # Additional arguments required for the algorithm [deg].
-    A₁ = @evalpoly(t_tdb, 119.75, 131.849)
-    A₂ = @evalpoly(t_tdb,  53.09, 479_264.290)
-    A₃ = @evalpoly(t_tdb, 313.45, 481_266.484)
-
-    # Time derivatives of the fundamental arguments [deg/century].
-    ∂L´_deg = @evalpoly(
+    # Obliquity of the ecliptic.
+    ϵ_deg, ∂ϵ_deg = _evalpoly_with_derivative(
         t_tdb,
-        +481_267.881_234_21,
-        2 * (-0.001_578_6),
-        3 * (+1 / 538_841),
-        4 * (-1 / 65_194_000)
+        (23.439_291, -0.013_004_2, -1.64e-7, +5.04e-7)
     )
 
-    ∂D_deg = @evalpoly(
-        t_tdb,
-        +445_267.111_403_4,
-        2 * (-0.001_881_9),
-        3 * (+1 / 545_868),
-        4 * (-1 / 113_065_000)
-    )
-
-    ∂M_deg = @evalpoly(
-        t_tdb,
-        +35_999.050_290_9,
-        2 * (-0.000_153_6),
-        3 * (+1 / 24_490_000)
-    )
-
-    ∂M´_deg = @evalpoly(
-        t_tdb,
-        +477_198.867_505_5,
-        2 * (+0.008_741_4),
-        3 * (+1 / 69_699),
-        4 * (-1 / 14_712_000)
-    )
-
-    ∂F_deg = @evalpoly(
-        t_tdb,
-        +483_202.017_523_3,
-        2 * (-0.003_653_9),
-        3 * (-1 / 3_526_000),
-        4 * (+1 / 863_310_000)
-    )
-
-    ∂ϵ_deg = @evalpoly(t_tdb, -0.013_004_2, 2 * (-1.64e-7), 3 * (+5.04e-7))
+    # Additional arguments required for the algorithm.
+    A₁_deg, ∂A₁_deg = _evalpoly_with_derivative(t_tdb, (119.75, 131.849))
+    A₂_deg, ∂A₂_deg = _evalpoly_with_derivative(t_tdb, ( 53.09, 479_264.290))
+    A₃_deg, ∂A₃_deg = _evalpoly_with_derivative(t_tdb, (313.45, 481_266.484))
 
     # Convert the angles to [rad]. They are not wrapped to [0, 2π] because they are only
     # used as arguments of `sincos`, which performs its own range reduction.
-    L´ = deg2rad(L´)
-    D  = deg2rad(D)
-    M  = deg2rad(M)
-    M´ = deg2rad(M´)
-    F  = deg2rad(F)
-    ϵ  = deg2rad(ϵ)
-    A₁ = deg2rad(A₁)
-    A₂ = deg2rad(A₂)
-    A₃ = deg2rad(A₃)
+    L´ = deg2rad(L´_deg)
+    D  = deg2rad(D_deg)
+    M  = deg2rad(M_deg)
+    M´ = deg2rad(M´_deg)
+    F  = deg2rad(F_deg)
+    ϵ  = deg2rad(ϵ_deg)
+    A₁ = deg2rad(A₁_deg)
+    A₂ = deg2rad(A₂_deg)
+    A₃ = deg2rad(A₃_deg)
 
     # Convert the angular rates to [rad/century].
     ∂L´ = deg2rad(∂L´_deg)
@@ -316,14 +290,13 @@ function moon_state_mod(jd_tdb::Number, ::Val{:Meeus})
     ∂M  = deg2rad(∂M_deg)
     ∂M´ = deg2rad(∂M´_deg)
     ∂F  = deg2rad(∂F_deg)
-    ∂A₁ = deg2rad(131.849)
-    ∂A₂ = deg2rad(479_264.290)
-    ∂A₃ = deg2rad(481_266.484)
+    ∂A₁ = deg2rad(∂A₁_deg)
+    ∂A₂ = deg2rad(∂A₂_deg)
+    ∂A₃ = deg2rad(∂A₃_deg)
 
     # Term used to correct the arguments that depend on the Sun's mean anomaly `M` due to
     # the decrease of the Earth's orbit eccentricity, and its time derivative [1/century].
-    E  = @evalpoly(t_tdb, 1, -0.002_516, -0.000_007_4)
-    ∂E = @evalpoly(t_tdb, -0.002_516, 2 * (-0.000_007_4))
+    E, ∂E = _evalpoly_with_derivative(t_tdb, (1, -0.002_516, -0.000_007_4))
 
     # == Periodic Terms ====================================================================
 
@@ -447,8 +420,11 @@ function moon_state_mod(jd_tdb::Number, ::Val{:Vallado})
     # Horizontal parallax of the Moon [deg].
     P = 0.9508 + 0.0518cos₁ + 0.0095cos₂ + 0.0078cos₃ + 0.0028cos₄
 
-    # Obliquity of the ecliptic [deg].
-    ϵ = @evalpoly(t_tdb, 23.439_291, -0.013_004_2, -1.64e-7, +5.04e-7)
+    # Obliquity of the ecliptic [deg] and its time derivative [deg/century].
+    ϵ, ∂ϵ = _evalpoly_with_derivative(
+        t_tdb,
+        (23.439_291, -0.013_004_2, -1.64e-7, +5.04e-7)
+    )
 
     # Time derivative of the ecliptic longitude [deg/century].
     ∂λₑ = 481_267.8813 +
@@ -470,9 +446,6 @@ function moon_state_mod(jd_tdb::Number, ::Val{:Vallado})
         0.0095sin₂ * deg2rad(-413_335.38) -
         0.0078sin₃ * deg2rad( 890_534.23) -
         0.0028sin₄ * deg2rad( 954_397.70)
-
-    # Time derivative of the obliquity of the ecliptic [deg/century].
-    ∂ϵ = @evalpoly(t_tdb, -0.013_004_2, 2 * (-1.64e-7), 3 * (+5.04e-7))
 
     # Convert the angles to [rad] and the rates to [rad/s].
     λₑ = deg2rad(λₑ)
